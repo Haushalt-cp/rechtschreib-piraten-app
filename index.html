@@ -2085,12 +2085,10 @@ window.addEventListener('resize',()=>{ clearTimeout(rzTimer); rzTimer=setTimeout
 /* ---- Einrichten ---- */
 function setupHTML(){
   return `<div class="blatt setup" style="margin-top:30px">
-    <h2>🏴‍☠️ Wortschatz-Piraten</h2><h3>Tablet einrichten (für Eltern)</h3>
-    <p>Dieses Tablet gehört einem Kind. Die App öffnet danach direkt seine Welt. Der Fortschritt wird nur auf diesem Tablet gespeichert (Prototyp ohne Server).</p>
+    <h2>🏴‍☠️ Wortschatz-Piraten</h2>
     <label>Vorname oder Spitzname des Kindes</label><input id="sname" maxlength="20" autocomplete="off" autocorrect="off" spellcheck="false">
-    <div class="hinweis">Tipp: Für die Tastatur des Tablets die Wortvorschläge und die automatische Korrektur ausschalten (Einstellungen → Tastatur). Die App versucht das selbst, aber nicht jede Tastatur hält sich daran.</div>
     ${speicherOk?'':'<div class="hinweis">⚠️ Dieser Browser erlaubt kein Speichern. Der Fortschritt geht beim Schliessen verloren.</div>'}
-    <button class="knopf gruen" id="sok">Einrichten</button></div>`;
+    <button class="knopf gruen" id="sok">Los geht's!</button></div>`;
 }
 function bindSetup(){
   document.getElementById('sok').onclick=()=>{
@@ -2991,7 +2989,7 @@ function eltern(){
    <div class="zeile" style="margin-top:8px"><input id="npin" type="password" inputmode="numeric" maxlength="4" placeholder="neue PIN" style="font-size:16px;padding:6px;width:120px"><button class="knopf" id="pinneu">Eltern-PIN ändern</button><span id="pininfo"></span></div>
 
    <h3>Daten sichern</h3>
-   <div class="hinweis">Der Prototyp speichert nur in diesem Browser. Zum Sichern oder zum Mitnehmen auf ein anderes Gerät: Text kopieren und z. B. in eine Notiz einfügen.</div>
+   <div class="hinweis">Der Fortschritt wird nur auf diesem Tablet gespeichert. Zum Sichern oder zum Mitnehmen auf ein anderes Gerät: Text kopieren und z. B. in eine Notiz einfügen.</div>
    <div class="zeile"><button class="knopf" id="kopie">Sicherung kopieren</button><span id="kopok"></span></div>
    <textarea id="imp" placeholder="Sicherung hier einfügen, um sie zu laden"></textarea>
    <div class="zeile"><button class="knopf" id="impok">Sicherung laden</button><span id="impinfo"></span></div>
