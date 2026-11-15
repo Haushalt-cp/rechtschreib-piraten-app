@@ -2992,7 +2992,7 @@ function eltern(){
 
    <h3>Kind</h3>
    <div class="zeile"><input id="nname" value="${esc(S.name)}" style="font-size:16px;padding:6px"><button class="knopf" id="nameok">Name ändern</button></div>
-   <div class="zeile" style="margin-top:8px"><input id="npin" type="password" inputmode="numeric" maxlength="4" placeholder="neue PIN" style="font-size:16px;padding:6px;width:120px"><button class="knopf" id="pinneu">Eltern-PIN ändern</button><span id="pininfo"></span></div>
+   <div class="zeile" style="margin-top:8px"><input id="npin" type="password" inputmode="numeric" maxlength="4" placeholder="neue PIN" style="font-size:16px;padding:6px;width:120px"><button class="knopf" id="pinneu">Eltern-PIN ändern (nur auf diesem Tablet)</button><span id="pininfo"></span></div>
 
    <h3>Speichern auf dem Server</h3>
    ${serverBlockHTML()}
@@ -3176,7 +3176,7 @@ const SPAETER='akubine_server_spaeter';
 function spaeterMerken(){ try{ localStorage.setItem(SPAETER,'1'); }catch(e){} }
 function vbAbmelden(){ if(VB && VB.eltern){ const s=VB.eltern; sbFetch('/auth/v1/logout',{method:'POST'},s).catch(()=>{}); } VB=null; }
 async function vbKinderLaden(){
-  const hh=await sbFetch('/rest/v1/haushalt?select=id,name',{},VB.eltern);
+  const hh=await sbFetch('/rest/v1/haushalt?select=id,name,einstellungen',{},VB.eltern);
   if(!hh.length){ VB.schritt='haushalt'; return; }
   VB.haushalt=hh[0];
   VB.kinder=await sbFetch(`/rest/v1/kind?select=id,name,stand_version,aktualisiert_am,muenzen:stand->muenzen&haushalt_id=eq.${hh[0].id}&order=erstellt_am`,{},VB.eltern);
@@ -3195,7 +3195,9 @@ function verbinden(){
     ${VB.erst?`<p style="margin-top:18px;font-size:15px"><a href="#" id="vbohne">${S?'Später verbinden':'Ohne Anmeldung ausprobieren (Fortschritt nur auf diesem Tablet)'}</a></p>`:''}`;
   else if(VB.schritt==='haushalt') inhalt=`<h2>🏠 Haushalt anlegen</h2>
     <p>Zu diesem Konto gibt es noch keinen Haushalt.</p>
-    <label>Name des Haushalts (z. B. Familie Muster)</label><input id="vbhh" maxlength="60" autocomplete="off">
+    <label>Name des Haushalts (z. B. Familie Muster)</label><input id="vbhh" maxlength="60" autocomplete="off" value="${esc(VB.hhName||'')}">
+    <label>Eltern-PIN (4 Ziffern)</label><input id="vbpin" type="password" inputmode="numeric" maxlength="4" autocomplete="off" style="max-width:200px">
+    <p style="font-size:15px;margin-top:-6px">Die PIN schützt die Eltern-Ansicht auf allen Tablets eurer Kinder. Die Kinder sollten sie nicht kennen.</p>
     ${m}<button class="knopf gruen" id="vbhhok">Haushalt anlegen</button>
     <h3>Oder: Einladung vom anderen Elternteil</h3>
     <label>Code</label><input id="vbcode" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false">
@@ -3236,8 +3238,13 @@ function verbinden(){
         else { VB.schritt='login'; VB.meldung='Fast geschafft! Wir haben eine E-Mail an '+d.email+' geschickt. Bitte darin auf den Bestätigungslink tippen, dann hierher zurückkommen und «Anmelden» tippen.'; } }); };
   }
   if(VB.schritt==='haushalt'){
-    $('vbhhok').onclick=()=>{ const n=$('vbhh').value.trim(); if(!n){ VB.meldung='Bitte einen Namen eingeben.'; return render(); }
-      schritt(async()=>{ await rpc('haushalt_anlegen',{p_name:n},VB.eltern); await vbKinderLaden(); }); };
+    $('vbhhok').onclick=()=>{ const n=$('vbhh').value.trim(), pin=$('vbpin').value.trim(); VB.hhName=n;
+      if(!n){ VB.meldung='Bitte einen Namen eingeben.'; return render(); }
+      if(!/^\d{4}$/.test(pin)){ VB.meldung='Bitte eine Eltern-PIN mit 4 Ziffern eingeben.'; return render(); }
+      schritt(async()=>{ const da=await sbFetch('/rest/v1/haushalt?select=id',{},VB.eltern);   // falls ein früherer Versuch halb geklappt hat
+        const id = da.length ? da[0].id : await rpc('haushalt_anlegen',{p_name:n},VB.eltern);
+        await sbFetch(`/rest/v1/haushalt?id=eq.${id}`,{method:'PATCH',headers:{Prefer:'return=minimal'},body:{name:n, einstellungen:{eltern_pin:pin}}},VB.eltern);
+        await vbKinderLaden(); }); };
     $('vbcodeok').onclick=()=>{ const c=$('vbcode').value.trim(); if(!c) return;
       schritt(async()=>{ await rpc('einladung_einloesen',{p_code:c},VB.eltern); await vbKinderLaden(); }); };
   }
@@ -3273,6 +3280,8 @@ async function vbKoppeln(k, quelle){
     if(!S){ S=neuerStand(k.name,''); S.reset=RESET_STAND; }
     neu.version=k.stand_version||0; neu.geaendert=true;
   }
+  const hpin=((VB.haushalt||{}).einstellungen||{}).eltern_pin;
+  if(hpin && /^\d{4}$/.test(hpin)) S.pin=hpin;   // Eltern-PIN des Haushalts gilt auf jedem Tablet
   SV=neu; svSpeichern();
   speichern();
   vbAbmelden(); VB={schritt:'fertig'};
