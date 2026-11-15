@@ -2415,7 +2415,11 @@ function satzHTML(s, wi, inhalt){
 }
 function spiel(){
   const L=S.lauf, t=L.aufgaben[L.i], s=SATZ[t.sid], E=S.einst;
-  const punkte = L.aufgaben.map((x,k)=>`<span class="punkt ${k<L.i||(k===L.i&&L.fb)?'ok':''} ${k===L.i&&!L.fb?'jetzt':''}"></span>`).join('');
+  // Punkte nur für die festen Aufgaben: eine eingeschobene Wiederholung macht die Runde nicht sichtbar länger
+  const fest = L.aufgaben.map((x,k)=>({x,k})).filter(o=>!o.x.nach);
+  const naechste = fest.findIndex(o=>o.k>=L.i);
+  const punkte = fest.map((o,n)=>{ const k=o.k; const ok = k<L.i || (k===L.i && L.fb);
+    const jetzt = (k===L.i && !L.fb) || (t.nach && !L.fb && n===naechste); return `<span class="punkt ${ok?'ok':''} ${jetzt?'jetzt':''}"></span>`; }).join('');
   let mitte, knoepfe, blase, stimmung='sprich', erkl='';
   const satzForm = formVon(t)==='satz';
   if(!L.fb){
@@ -2500,53 +2504,152 @@ function rotHTML(ist, soll){
     soll: soll.split('').map((c,i)=> d.sollOk[i] ? esc(c) : `<span class="gruenb">${esc(c)}</span>`).join('')
   };
 }
-/* Kurze, kindgerechte Erklärung, warum man es so schreibt (Feedback 14.11.2026) */
-/* Erklärung nur, wenn genau EINE typische Stelle falsch ist und die Regel genau diese Stelle erklärt.
-   Probe: Wendet man die Regel auf das Geschriebene an, muss genau das richtige Wort herauskommen. Sonst keine Erklärung. */
-function erklaerung(ist, soll, art){
-  if(!ist || !soll || S.einst.erklaerungen===false) return '';
-  if(art==='satzanfang') return 'Am Satzanfang schreibt man gross.';
-  if(ist.toLowerCase()===soll.toLowerCase()){
-    if(ist.slice(1)!==soll.slice(1)) return '';
-    return soll[0]===soll[0].toUpperCase() ? `${soll} ist ein Nomen. Nomen schreibt man gross.` : `${soll} schreibt man klein.`;
-  }
-  if(ist[0]!==soll[0] && ist[0].toLowerCase()===soll[0].toLowerCase()) return '';   // dazu noch gross/klein falsch: zu viel auf einmal
-  const i=ist.toLowerCase(), s=soll.toLowerCase();
-  const VOK=/(äu|eu|ei|au|ie|[aeiouäöü])$/;
-  const regeln=[];
-  const r=(falsch, richtig, text, wo)=>regeln.push({falsch, richtig, text, wo});
-  r('i','ie',()=>`Das lange i in ${soll} schreibt man ie.`);
-  r('ie','i',()=>`${soll} schreibt man nur mit i.`);
-  r('k','ck',()=>'Nach einem kurzen Laut schreibt man ck.'); r('kk','ck',()=>'Nach einem kurzen Laut schreibt man ck.');
-  r('z','tz',()=>'Nach einem kurzen Laut schreibt man tz.'); r('zz','tz',()=>'Nach einem kurzen Laut schreibt man tz.');
-  for(const c of 'lmnstpfrbgd'){
-    r(c, c+c, k=>{ const v=(s.slice(0,k).match(VOK)||[''])[0]; return v ? `Das ${v} in ${soll} ist kurz. Darum schreibt man ${c+c}.` : `${soll} schreibt man mit ${c+c}.`; });
-    r(c+c, c, ()=>`${soll} schreibt man nur mit einem ${c}.`);
-  }
-  for(const v of ['a','e','i','o','u','ä','ö','ü']){ r(v, v+'h', ()=>`In ${soll} hört man das h nicht. Man schreibt es aber.`); r(v+'h', v, ()=> s.includes(v+'h') ? `${soll} schreibt man nur mit einem h.` : `${soll} schreibt man ohne h.`); }
-  r('ck','k',()=>`${soll} schreibt man nur mit k.`); r('tz','z',()=>`${soll} schreibt man nur mit z.`);
-  r('kw','qu',()=>'Man hört kw, aber man schreibt qu.'); r('ß','ss',()=>'Bei uns schreibt man ss, nicht ß.');
-  r('e','ä',()=>`${soll} schreibt man mit ä.`); r('eu','äu',()=>`${soll} schreibt man mit äu.`);
-  r('o','ö',()=>`${soll} schreibt man mit ö.`); r('u','ü',()=>`${soll} schreibt man mit ü.`);
-  r('ai','ei',()=>'Man hört ai, aber man schreibt ei.'); r('oi','eu',()=>'Man hört oi, aber man schreibt eu.'); r('oy','eu',()=>'Man hört oi, aber man schreibt eu.');
-  r('scht','st',()=>'Man hört scht, aber man schreibt st.','anfang'); r('schp','sp',()=>'Man hört schp, aber man schreibt sp.','anfang');
-  r('t','d',()=>'Am Ende hört man t, aber man schreibt d.','ende'); r('p','b',()=>'Am Ende hört man p, aber man schreibt b.','ende'); r('k','g',()=>'Am Ende hört man k, aber man schreibt g.','ende');
-  r('f','v',()=>`${soll} schreibt man mit V. Das muss man sich merken.`,'anfang');
-  for(const g of regeln){
-    let k=i.indexOf(g.falsch);
-    while(k>=0){
-      const ok = !g.wo || (g.wo==='anfang' ? k===0 : k+g.falsch.length===i.length);
-      if(ok && i.slice(0,k)+g.richtig+i.slice(k+g.falsch.length)===s) return g.text(k);
-      k=i.indexOf(g.falsch, k+1);
-    }
-  }
+/* =========================================================================
+   ERKLÄRUNG BEI FEHLERN (Texte: claude/korrektur-texte.md, gutgeheissen 15.11.2026)
+   Akubine erklärt, wie das Kind es selbst herausfinden kann (Probe), mit Wörtern für Erstklässler.
+   Nur wenn die App sicher ist, welcher Fehler es ist. Merkwörter (v/f, stummes h, aa/ee/oo, x/chs) ohne Erklärung.
+   Bei mehreren Fehlern nur einer: Gross/klein → lang/kurz → weich/hart → verwandte Wörter → anders gehört → vertauscht/zu viel/fehlt.
+   ========================================================================= */
+const BEGLEITER = new Set('der die das den dem des ein eine einen einem einer'.split(' '));
+/* Begleiter zu jedem Nomen aus den Sätzen (Satzanfang «Die Katze …», Wortgruppen «die braune Katze»), Mehrheit zählt */
+const ARTIKEL = (()=>{ const z={};
+  SAETZE.forEach(s=>{ const w=s.words, a=(w[0]||'').toLowerCase(); if(!['der','die','das'].includes(a)) return;
+    for(let k=1;k<Math.min(w.length,4);k++){ const x=w[k];
+      if(x[0]!==x[0].toLowerCase()){ (z[x]=z[x]||{})[a]=((z[x]||{})[a]||0)+1; break; }
+      if(BEGLEITER.has(x.toLowerCase())) break; } });
+  const r={}; for(const [n,c] of Object.entries(z)) r[n]=Object.entries(c).sort((x,y)=>y[1]-x[1])[0][0]; return r; })();
+/* Wort länger machen (d/t, g/k, b/p am Ende), in Silben */
+const VERLAENGERN = { Abend:'viele A-ben-de', Bild:'viele Bil-der', Burg:'viele Bur-gen', Freund:'viele Freun-de', Gold:'gol-den',
+  Herd:'viele Her-de', Hund:'viele Hun-de', Kalb:'viele Käl-ber', Kind:'viele Kin-der', Kleid:'viele Klei-der', 'Käfig':'viele Kä-fi-ge',
+  Lied:'viele Lie-der', Pferd:'viele Pfer-de', Ring:'viele Rin-ge', Strand:'viele Strän-de', Tag:'viele Ta-ge', Wald:'viele Wäl-der',
+  Weg:'viele We-ge', gelb:'gel-be', lustig:'lus-ti-ge', riesig:'rie-si-ge', rund:'run-de' };
+const NIE_VERLAENGERN = new Set(['und','sind','mag','lang','Zeitung','Sand']);
+const ALLE_WOERTER = new Set(SAETZE.flatMap(s=>s.words));
+const VOKAL_RX = /^(äu|eu|ei|ai|au|ie|aa|ee|oo|[aeiouäöüy])/i;
+/* einfache Silbentrennung für Kinderwörter: Bie-ne, Af-fe, De-cke, Kat-ze, Fens-ter */
+function silben(w){
+  const teile=[]; let i=0;
+  while(i<w.length){ const m=w.slice(i).match(VOKAL_RX); if(m){ teile.push({v:true,t:w.substr(i,m[0].length)}); i+=m[0].length; continue; }
+    const k=w.slice(i).match(/^(sch|ch|ck|ph|qu)/i); const t=k?k[0]:w[i]; teile.push({v:false,t}); i+=t.length; }
+  const vok=teile.map((t,k)=>t.v?k:-1).filter(k=>k>=0);
+  if(vok.length<2) return w;
+  const schnitt=[];
+  for(let n=0;n<vok.length-1;n++){ const a=vok[n], b=vok[n+1], kons=b-a-1;
+    schnitt.push(kons<=1 ? a+1 : b-1); }   // ein Mitlaut: vor ihm trennen; mehrere: vor dem letzten
+  let out=''; teile.forEach((t,k)=>{ if(schnitt.includes(k)) out+='-'; out+=t.t; }); return out;
+}
+function istLang(vor){ return /(ie|ei|ai|au|eu|äu|aa|ee|oo|[aeiouäöü]h)$/i.test(vor); }
+function vokalVor(s, k){ return (s.slice(0,k).match(/(äu|eu|ei|ai|au|ie|[aeiouäöü])$/i)||[''])[0].toLowerCase(); }
+function grundwort(soll){
+  const roh=soll.replace(/äu/g,'au').replace(/Äu/g,'Au').replace(/ä/g,'a').replace(/Ä/g,'A').replace(/ö/g,'o').replace(/Ö/g,'O').replace(/ü/g,'u').replace(/Ü/g,'U');
+  if(roh===soll) return '';
+  for(const end of ['','e','er','en','n','chen','lein','s']){ if(end && !roh.endsWith(end)) continue; const c=end?roh.slice(0,-end.length):roh; if(c.length>1 && c!==soll && ALLE_WOERTER.has(c)) return c; }
   return '';
+}
+/* Regeln: falsch → richtig an einer Stelle; gruppe = Rang bei mehreren Fehlern; merk = ohne Erklärung */
+const ERKL_REGELN = (()=>{ const R=[]; const r=(falsch,richtig,gruppe,text,wo)=>R.push({falsch,richtig,gruppe,text,wo});
+  const kurzDoppel=(soll,k,dd,zwei)=>{ const v=vokalVor(soll,k); if(!v) return `${soll} schreibt man mit ${dd}.`;
+    return VOKAL_RX.test(soll.slice(k+dd.length)) ? `Sprich es in Silben: ${silben(soll)}. Das ${v} ist kurz. Darum schreibt man ${zwei}.` : `Das ${v} in ${soll} ist kurz. Darum schreibt man ${dd}.`; };
+  r('i','ie',2,soll=>`Das i in ${soll} ist lang. Darum schreibt man ie.`);
+  r('ie','i',2,soll=>`Das i in ${soll} ist kurz. Darum schreibt man nur i.`);
+  for(const c of 'lmnstpfrbgdk'.replace('k','')){ r(c,c+c,2,(soll,k)=>kurzDoppel(soll,k,c+c,'zwei '+c));
+    r(c+c,c,2,(soll,k)=>{ const v=vokalVor(soll,k); return v && istLang(soll.slice(0,k)) ? `Das ${v} in ${soll} ist lang. Darum schreibt man nur ein ${c}.` : `Hier ist ein ${c} zu viel.`; }); }
+  for(const [f,ri] of [['k','ck'],['kk','ck'],['z','tz'],['zz','tz']]) r(f,ri,2,(soll,k)=>kurzDoppel(soll,k,ri,ri));
+  r('ck','k',2,()=>'Hier ist ein c zu viel.'); r('tz','z',2,()=>'Hier ist ein t zu viel.');
+  for(const [h,w] of [['t','d'],['p','b'],['k','g']]) r(h,w,3,soll=>{
+      if(NIE_VERLAENGERN.has(soll)) return '';
+      const lang=VERLAENGERN[soll];
+      return lang ? `Am Ende klingt es hart wie ${h}. Mach das Wort länger: ${lang}. Jetzt hörst du ein weiches ${w}. Darum schreibt man ${soll} mit ${w}.`
+                  : (soll[0]!==soll[0].toLowerCase() ? `Am Ende klingt es hart wie ${h}. Mach das Wort länger. Dann hörst du ein weiches ${w}.` : ''); },'ende');
+  for(const [f,ri] of [['eu','äu'],['e','ä'],['o','ö'],['u','ü']]) r(f,ri,4,soll=>{ const g=grundwort(soll); return g ? `${soll} kommt von ${g}. Darum schreibt man ${ri}.` : `${soll} schreibt man mit ${ri}.`; });
+  r('scht','st',5,()=>'Man hört scht, aber man schreibt st.','anfang'); r('schp','sp',5,()=>'Man hört schp, aber man schreibt sp.','anfang');
+  r('kw','qu',5,()=>'Man hört kw, aber man schreibt qu.'); r('ß','ss',5,()=>'Bei uns schreibt man ss, nicht ß.');
+  r('ai','ei',5,()=>'Man hört ai, aber man schreibt ei.'); r('oi','eu',5,()=>'Man hört oi, aber man schreibt eu.'); r('oy','eu',5,()=>'Man hört oi, aber man schreibt eu.');
+  // Merkwörter: nur «So schreibt man es»
+  r('f','v',0,null,'anfang'); r('v','f',0,null,'anfang'); r('ks','x',0,null); r('x','chs',0,null); r('ks','chs',0,null);
+  for(const v of 'aeiouäöü') r(v,v+'h',0,null);   // stummes h fehlt (Kuh)
+  for(const v of 'aeo') r(v,v+v,0,null);            // aa/ee/oo fehlt (Haar)
+  return R; })();
+/* eine Stelle anwenden */
+function regelTreffer(i, s){
+  const t=[];
+  for(const g of ERKL_REGELN){ let k=i.indexOf(g.falsch);
+    while(k>=0){ const ok=!g.wo || (g.wo==='anfang' ? k===0 : k+g.falsch.length===i.length);
+      if(ok) t.push({g, k, neu:i.slice(0,k)+g.richtig+i.slice(k+g.falsch.length)});
+      k=i.indexOf(g.falsch,k+1); } }
+  return t;
+}
+/* Buchstaben vertauscht, einer zu viel, einer fehlt (nur wenn das der einzige Fehler ist) */
+function einfacherFehler(i, s, soll){
+  if(i.length===s.length){ for(let k=0;k<i.length-1;k++){ if(i[k]!==s[k]){
+      if(i[k]===s[k+1] && i[k+1]===s[k] && i.slice(k+2)===s.slice(k+2) && i[k]!==i[k+1]) return `Du hast zwei Buchstaben vertauscht. Zuerst kommt ${soll[k]}, dann ${soll[k+1]}: ${soll}.`;
+      return ''; } } return ''; }
+  if(i.length===s.length+1){ for(let k=0;k<i.length;k++){ if(i.slice(0,k)+i.slice(k+1)===s) return `Hier ist ein ${i[k]} zu viel.`; } return ''; }
+  if(i.length+1===s.length){ for(let k=0;k<s.length;k++){ if(s.slice(0,k)+s.slice(k+1)===i){ const sb=silben(soll);
+      return sb.includes('-') ? `Sprich es langsam in Silben: ${sb}. Hier fehlt das ${soll[k]}.` : `Sprich es langsam: ${soll}. Hier fehlt das ${soll[k]}.`; } } }
+  return '';
+}
+/* Gross/klein: Text je nach Wort */
+function grossKleinText(soll, ctx){
+  if(soll[0]!==soll[0].toLowerCase()){
+    if(ctx && ctx.gkWieder) return 'Probier ein der, die oder das vor das Wort zu setzen, bevor du es schreibst.';
+    const a=ARTIKEL[soll];
+    return `${soll} schreibt man gross. Wörter, vor die man der, die oder das stellen kann, schreibt man gross.` + (a ? ` Hier kannst du ${a} davor sagen: ${a} ${soll}.` : '');
+  }
+  if(BEGLEITER.has(soll.toLowerCase())) return `${soll} schreibt man klein. Gross schreibt man es nur am Anfang von einem Satz.`;
+  if(ctx && ctx.gkWieder) return 'Probier ein der, die oder das vor das Wort zu setzen, bevor du es schreibst.';
+  return `${soll} schreibt man klein. Man schreibt nur Wörter gross, vor die man der, die oder das stellen kann. In diesem Satz geht das bei ${soll} nicht.`;
+}
+/* Ergebnis: {text, gruppe} oder null. ctx = {satzanfang: Wort steht am Satzanfang, gkWieder: schon ein Gross/klein-Fehler in dieser Runde} */
+function erklaerungMitRang(ist, soll, ctx){
+  if(!ist || !soll) return null;
+  ctx=ctx||{};
+  const anfangFalsch = ist[0]!==soll[0] && ist[0].toLowerCase()===soll[0].toLowerCase();
+  if(anfangFalsch) return {gruppe:1, gk:!BEGLEITER.has(soll.toLowerCase()) && !(ctx.satzanfang && ist[0]===ist[0].toLowerCase()), text: ctx.satzanfang && soll[0]!==soll[0].toLowerCase() && ist[0]===ist[0].toLowerCase()
+      ? 'Am Anfang von einem Satz schreibt man gross.' : grossKleinText(soll, ctx)};
+  const i=ist.toLowerCase(), s=soll.toLowerCase();
+  if(i===s) return null;   // gross/klein mitten im Wort: nur zeigen
+  const treffer=regelTreffer(i, s);
+  // genau ein Fehler: Regel muss genau das richtige Wort ergeben
+  const genau=treffer.filter(t=>t.neu===s).sort((x,y)=>x.g.gruppe-y.g.gruppe);
+  if(genau.length){ const t=genau.find(x=>x.g.gruppe>0) && !genau.some(x=>x.g.gruppe===0) ? genau[0] : null;
+    if(!t) return null;                       // Merkwort
+    const txt=t.g.text(soll, t.k); return txt ? {gruppe:t.g.gruppe, text:txt} : null; }
+  const einfach=einfacherFehler(i, s, soll);
+  if(einfach) return {gruppe:6, text:einfach};
+  // mehrere Fehler: die wichtigste Stelle, die sicher in Richtung des richtigen Worts geht
+  const d0=lev(i,s); if(d0>3) return null;
+  const naeher=treffer.filter(t=> t.g.gruppe>0 && lev(t.neu,s)===d0-lev(i,t.neu) && Math.abs(s.indexOf(t.g.richtig, Math.max(0,t.k-1))-t.k)<=1)
+    .sort((x,y)=>x.g.gruppe-y.g.gruppe);
+  for(const t of naeher){ const txt=t.g.text(soll, t.k); if(txt) return {gruppe:t.g.gruppe, text:txt}; }
+  return null;
+}
+function erklaerung(ist, soll, art, ctx){
+  if(S && S.einst && S.einst.erklaerungen===false) return '';
+  const e=erklaerungMitRang(ist, soll, ctx); return e ? e.text : '';
 }
 /* jedes geübte Wort merken, damit es später wiederkommt */
 function wlMerken(key, wort, sid){
   if(!WORTKEY[wort]) return;
   S.wl=S.wl||{};
   const w=S.wl[key]||(S.wl[key]={wort,n:0,t:0}); w.n++; w.t=Date.now(); w.sid=sid;
+}
+/* Fehlerwort zeitnah nochmals: 3 Aufgaben später in einem anderen Satz, aus dem Gedächtnis.
+   Höchstens 2 pro Runde, zusätzlich zu den 12 Aufgaben; nicht in der Schatzkisten-Runde; eine Wiederholung wird nicht nochmals wiederholt. */
+const NOCHMALS_MAX = 2, NOCHMALS_ABSTAND = 4;
+function nochmalsEinplanen(L, t, wort, sid){
+  if(!L || L.kiste || t.nach || !WORTKEY[wort] || BEGLEITER.has(wort.toLowerCase())) return;
+  L.nachN = L.nachN||0; if(L.nachN>=NOCHMALS_MAX) return;
+  if(L.aufgaben.some(x=>x.nach && x.wort===wort)) return;
+  const pos = Math.min(L.i+NOCHMALS_ABSTAND, L.aufgaben.length);
+  if(pos-L.i<2) return;                      // nicht direkt danach – dann kommt es über die Schatzkiste
+  const aus = new Set(L.aufgaben.map(x=>x.sid)); aus.add(sid);
+  const sperre = L.uebung ? null : sperreFuer(S, L.a);
+  let c = satzFuerWort(S, wort, sid, aus, sperre, L.ins||INSEL.id);
+  if(!c || aus.has(c.sid)) c = satzFuerWort(S, wort, sid, aus, sperre);
+  if(!c || aus.has(c.sid)) return;
+  const neu = formenSetzen(S, [{sid:c.sid, wi:c.wi, schatz:false, wdh:true, nach:true, wort, key:keyFuer(wort)}])[0];
+  L.aufgaben.splice(pos, 0, neu); L.nachN++;
 }
 function abgeben(eingabe){
   const L=S.lauf, t=L.aufgaben[L.i], s=SATZ[t.sid], E=S.einst, h=heute(), a=(L.kiste||L.uebung)?null:abStand(L.a, L.ins||'tier');
@@ -2569,7 +2672,9 @@ function abgeben(eingabe){
       if(art==='satzanfang'){ zeichenZaehlen('Satzanfang gross',false); text=fuell(TEXTE.satzanfang,{wort:soll}); }
       else { kisteFalsch(S,key,soll,art==='grossklein'?'Gross/klein':'Schreibweise',h,s.id); text=fuell(zufall(TEXTE.nichtRichtig),{wort:soll}); }
       const ist=eingabe.replace(/\s+/g,' ').trim().replace(/[.,!?;:]+$/,'').trim();
-      erkl=erklaerung(ist, soll, art);
+      const e = S.einst.erklaerungen===false ? null : erklaerungMitRang(ist, soll, {satzanfang: t.wi===0, gkWieder:(L.gk||0)>=1});
+      if(e){ erkl=e.text; if(e.gk) L.gk=(L.gk||0)+1; }
+      nochmalsEinplanen(L, t, soll, s.id);
       const m=rotHTML(ist, soll);
       html=`<div class="mitte"><div class="dein"><span class="falsch">${m.ist}</span></div><div class="grosswort">${m.soll}</div></div>`+
            `<div class="satz" style="font-size:30px">${satzHTML(s,t.wi,m.soll)}</div>`;
@@ -2596,9 +2701,18 @@ function abgeben(eingabe){
       if(alleOk && !v.endeOk) text=fuell(TEXTE.satzzeichen,{zeichen:ZEICHEN_NAME[s.ende]});
       else if(nurAnfang && v.endeOk) text=fuell(TEXTE.satzanfang,{wort:s.words[0]});
       else text=zufall(TEXTE.ganzerSatzFast);
-      const erstes=v.woerter.find(w=>w.art!=='richtig' && w.art!=='fehlt');
-      erkl = erstes ? erklaerung(erstes.ist, erstes.soll, erstes.art) : '';
-      if(!erkl && alleOk && !v.endeOk) erkl = s.ende==='?' ? 'Bei einer Frage kommt am Ende ein Fragezeichen.' : s.ende==='!' ? 'Wer ruft, macht am Ende ein Ausrufezeichen.' : 'Am Ende vom Satz kommt ein Punkt.';
+      // bei mehreren falschen Wörtern: nur eine Erklärung, die wichtigste (Gross/klein zuerst)
+      if(S.einst.erklaerungen!==false){
+        let beste=null;
+        v.woerter.forEach((w,wi)=>{ if(w.art==='richtig' || w.art==='fehlt') return;
+          const e=erklaerungMitRang(w.ist, w.soll, {satzanfang: wi===0 && !s.klein, gkWieder:(L.gk||0)>=1});
+          if(e && (!beste || e.gruppe<beste.gruppe)) beste=e; });
+        if(beste){ erkl=beste.text; if(beste.gk) L.gk=(L.gk||0)+1; }
+        if(!erkl && alleOk && !v.endeOk) erkl = s.ende==='?' ? 'Das ist eine Frage. Darum kommt am Ende ein Fragezeichen.' : s.ende==='!' ? 'Wer ruft, macht am Ende ein Ausrufezeichen.' : 'Am Ende von einem Satz kommt ein Punkt.';
+      }
+      // ein falsch geschriebenes Wort kommt in dieser Runde nochmals (nicht bei Gross/klein am Satzanfang oder fehlenden Wörtern)
+      const fw=v.woerter.find(w=>(w.art==='schreibweise' || w.art==='grossklein') && WORTKEY[w.soll] && !BEGLEITER.has(w.soll.toLowerCase()));
+      if(fw) nochmalsEinplanen(L, t, fw.soll, s.id);
       // oben: was das Kind geschrieben hat, Falsches rot; unten: richtiger Satz, Korrekturen grün
       const dein = v.woerter.map(w=> w.art==='richtig' ? esc(w.ist) : w.art==='fehlt' ? '<b class="rotb">___</b>' : rotHTML(w.ist,w.soll).ist).join(' ')
         + (v.zuviel.length ? ' '+v.zuviel.map(z=>`<b class="rotb">${esc(z)}</b>`).join(' ') : '')
