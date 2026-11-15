@@ -2054,7 +2054,8 @@ function zeichenZaehlen(z, ok){ const e=S.zeichen[z]||(S.zeichen[z]={richtig:0,f
 
 function zeige(v,p){ ansicht=v; parm=p||{}; render(); }
 function render(){
-  if(!S && ansicht!=='verbinden'){ app.innerHTML=setupHTML(); return bindSetup(); }
+  if(!S && ansicht!=='verbinden' && ansicht!=='setup'){ VB=VB||{schritt:'login',erst:true}; ansicht='verbinden'; }
+  if(!S && ansicht==='setup'){ app.innerHTML=setupHTML(); return bindSetup(); }
   if(ansicht!=='figur' && ansicht!=='elternPin' && ansicht!=='eltern' && ansicht!=='verbinden' && !(S.figur&&S.figur.fertig)) ansicht='figur';
   const f = {karte,insel,bucht,burg,spiel,rundeEnde,schatzwahl,kiste,kisteStart:starteKiste,laden:piratenladen,umkleide,figur,elternPin,eltern,verbinden}[ansicht] || karte;
   f();
@@ -2091,10 +2092,11 @@ function setupHTML(){
     <label>Vorname oder Spitzname des Kindes</label><input id="sname" maxlength="20" autocomplete="off" autocorrect="off" spellcheck="false">
     ${speicherOk?'':'<div class="hinweis">⚠️ Dieser Browser erlaubt kein Speichern. Der Fortschritt geht beim Schliessen verloren.</div>'}
     <button class="knopf gruen" id="sok">Los geht's!</button>
-    <p style="margin-top:22px;font-size:15px">Eltern: Gibt es für das Kind schon einen Fortschritt auf dem Server? <a href="#" id="swieder">Tablet verbinden und Fortschritt holen</a></p></div>`;
+    <div class="hinweis">Ohne Anmeldung wird der Fortschritt nur auf diesem Tablet gespeichert. Verbinden geht später jederzeit in der Eltern-Ansicht.</div>
+    <p style="margin-top:14px;font-size:15px"><a href="#" id="swieder">Zurück zur Eltern-Anmeldung</a></p></div>`;
 }
 function bindSetup(){
-  document.getElementById('swieder').onclick=e=>{ e.preventDefault(); zeige('verbinden'); };
+  document.getElementById('swieder').onclick=e=>{ e.preventDefault(); VB={schritt:'login',erst:true}; zeige('verbinden'); };
   document.getElementById('sok').onclick=()=>{
     const n=document.getElementById('sname').value.trim();
     if(!n){ document.getElementById('sname').focus(); return; }
@@ -3168,7 +3170,10 @@ function serverBlockBinden($){
 
 /* ---- Verbinden (Eltern) ---- */
 let VB=null;   // {schritt, eltern, haushalt, kinder, meldung, wahl}
-function vbKopf(){ return `<header class="kopf"><button class="zur" id="vbzur">⬅</button><div class="titel">Mit dem Server verbinden</div><div></div></header>`; }
+function vbKopf(){ const ohne = VB.erst && (VB.schritt==='login'||VB.schritt==='laeuft'||VB.schritt==='fertig');
+  return `<header class="kopf">${ohne?'<div></div>':'<button class="zur" id="vbzur">⬅</button>'}<div class="titel">${VB.erst?'Einrichten':'Mit dem Server verbinden'}</div><div></div></header>`; }
+const SPAETER='akubine_server_spaeter';
+function spaeterMerken(){ try{ localStorage.setItem(SPAETER,'1'); }catch(e){} }
 function vbAbmelden(){ if(VB && VB.eltern){ const s=VB.eltern; sbFetch('/auth/v1/logout',{method:'POST'},s).catch(()=>{}); } VB=null; }
 async function vbKinderLaden(){
   const hh=await sbFetch('/rest/v1/haushalt?select=id,name',{},VB.eltern);
@@ -3181,11 +3186,13 @@ function verbinden(){
   if(!VB) VB={schritt:'login'};
   const m=VB.meldung?`<div class="hinweis">${esc(VB.meldung)}</div>`:'';
   let inhalt='';
-  if(VB.schritt==='login') inhalt=`<h2>🔑 Eltern-Anmeldung</h2>
-    <p>Einmal pro Tablet: Ein Elternteil meldet sich an und wählt, zu welchem Kind dieses Tablet gehört. Danach speichert das Tablet den Fortschritt automatisch auf dem Server – das Kind merkt davon nichts.</p>
-    <label>E-Mail</label><input id="vbmail" type="email" autocomplete="username" autocapitalize="off" spellcheck="false">
-    <label>Passwort</label><input id="vbpw" type="password" autocomplete="current-password">
-    ${m}<div class="zeile"><button class="knopf gruen" id="vblogin">Anmelden</button><button class="knopf" id="vbneu">Neues Eltern-Konto</button></div>`;
+  if(VB.schritt==='login') inhalt=`${VB.erst?'<h2>🏴‍☠️ Willkommen bei den Wortschatz-Piraten!</h2><p><b>Für Eltern:</b> Meldet euch einmal an und verbindet dieses Tablet mit eurem Kind. Der Fortschritt wird dann automatisch gesichert und geht auch bei einem neuen Tablet nicht verloren.</p>'
+      :'<h2>🔑 Eltern-Anmeldung</h2><p>Einmal pro Tablet: Ein Elternteil meldet sich an und wählt, zu welchem Kind dieses Tablet gehört. Danach speichert das Tablet den Fortschritt automatisch – das Kind merkt davon nichts.</p>'}
+    <label>E-Mail</label><input id="vbmail" type="email" autocomplete="username" autocapitalize="off" spellcheck="false" value="${esc(VB.mail||'')}">
+    <label>Passwort</label><input id="vbpw" type="password" autocomplete="current-password" value="${esc(VB.pw||'')}">
+    ${m}<div class="zeile"><button class="knopf gruen" id="vblogin">Anmelden</button><button class="knopf" id="vbneu">Konto eröffnen</button></div>
+    <p style="font-size:15px">Noch kein Konto? E-Mail und ein neues Passwort (mindestens 6 Zeichen) eingeben und «Konto eröffnen» tippen.</p>
+    ${VB.erst?`<p style="margin-top:18px;font-size:15px"><a href="#" id="vbohne">${S?'Später verbinden':'Ohne Anmeldung ausprobieren (Fortschritt nur auf diesem Tablet)'}</a></p>`:''}`;
   else if(VB.schritt==='haushalt') inhalt=`<h2>🏠 Haushalt anlegen</h2>
     <p>Zu diesem Konto gibt es noch keinen Haushalt.</p>
     <label>Name des Haushalts (z. B. Familie Muster)</label><input id="vbhh" maxlength="60" autocomplete="off">
@@ -3193,12 +3200,12 @@ function verbinden(){
     <h3>Oder: Einladung vom anderen Elternteil</h3>
     <label>Code</label><input id="vbcode" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false">
     <button class="knopf" id="vbcodeok">Code einlösen</button>`;
-  else if(VB.schritt==='kinder') inhalt=`<h2>👧👦 Zu welchem Kind gehört dieses Tablet?</h2>
+  else if(VB.schritt==='kinder') inhalt=`<h2>👧👦 Für welches Kind ist dieses Tablet?</h2>
     <p>Haushalt: <b>${esc(VB.haushalt.name)}</b></p>${m}
     <div class="wahl-liste" style="display:flex;flex-direction:column;gap:10px">
     ${VB.kinder.map(k=>`<button class="knopf" data-kind="${k.id}">${esc(k.name)} <small style="font-weight:400">${k.stand_version?`· auf dem Server: ${k.muenzen||0} Münzen, zuletzt ${zeitText(k.aktualisiert_am)}`:'· noch kein Fortschritt auf dem Server'}</small></button>`).join('')}
     </div>
-    <h3>Neues Kind</h3>
+    <h3>${VB.kinder.length?'Oder neues Kind':'Kind eintragen'}</h3>
     <div class="zeile"><input id="vbkind" maxlength="20" autocomplete="off" value="${S?esc(S.name):''}" placeholder="Vorname oder Spitzname" style="max-width:300px;margin:0"><button class="knopf gruen" id="vbkindok">Anlegen und verbinden</button></div>
     <h3>Zweiter Elternteil</h3>
     <div class="zeile"><button class="knopf" id="vbeinl">Einladungscode erstellen</button><span id="vbeinlcode"></span></div>`;
@@ -3212,20 +3219,21 @@ function verbinden(){
   else if(VB.schritt==='laeuft') inhalt=`<h2>⏳ Einen Moment …</h2>${m}`;
   else if(VB.schritt==='fertig') inhalt=`<h2>✓ Verbunden</h2><p>Dieses Tablet gehört jetzt zu <b>${esc(SV.name)}</b>. Der Fortschritt wird ab jetzt automatisch auf dem Server gespeichert.</p>
     <button class="knopf gruen" id="vbfertig">Fertig</button>`;
-  app.innerHTML=`${vbKopf()}<div class="blatt eltern setup" style="max-width:640px">${inhalt}</div>`;
+  app.innerHTML=`${vbKopf()}<div class="blatt eltern setup" style="max-width:640px;margin:10px auto">${inhalt}</div>`;
   const $=id=>document.getElementById(id);
-  const zurueck=()=>{ vbAbmelden(); if(!S) zeige('karte'); else zeige(elternOk?'eltern':'karte'); };
-  $('vbzur').onclick=zurueck;
+  const zurueck=()=>{ if(VB.erst){ vbAbmelden(); VB={schritt:'login',erst:true}; return render(); } vbAbmelden(); if(!S) zeige('karte'); else zeige(elternOk?'eltern':'karte'); };
+  if($('vbzur')) $('vbzur').onclick=zurueck;
   const fehler=e=>{ VB.meldung=e.message; if(VB.schritt==='laeuft') VB.schritt=VB.vorher||'login'; render(); };
   const schritt=async(fn)=>{ VB.vorher=VB.schritt; VB.meldung=''; VB.schritt='laeuft'; render(); try{ await fn(); }catch(e){ return fehler(e); } render(); };
   if(VB.schritt==='login'){
-    const daten=()=>({email:$('vbmail').value.trim(), password:$('vbpw').value});
+    const daten=()=>{ VB.mail=$('vbmail').value.trim(); VB.pw=$('vbpw').value; return {email:VB.mail, password:VB.pw}; };
+    if($('vbohne')) $('vbohne').onclick=e=>{ e.preventDefault(); spaeterMerken(); VB=null; zeige(S?'karte':'setup'); };
     $('vblogin').onclick=()=>{ const d=daten(); if(!d.email||!d.password){ VB.meldung='Bitte E-Mail und Passwort eingeben.'; return render(); }
-      schritt(async()=>{ VB.eltern=sessAus(await sbFetch('/auth/v1/token?grant_type=password',{method:'POST',body:d})); await vbKinderLaden(); }); };
-    $('vbneu').onclick=()=>{ const d=daten(); if(!d.email||!d.password){ VB.meldung='Bitte E-Mail und ein Passwort (mindestens 6 Zeichen) eingeben, dann nochmals «Neues Eltern-Konto» tippen.'; return render(); }
+      schritt(async()=>{ VB.eltern=sessAus(await sbFetch('/auth/v1/token?grant_type=password',{method:'POST',body:d})); VB.pw=''; await vbKinderLaden(); }); };
+    $('vbneu').onclick=()=>{ const d=daten(); if(!d.email||!d.password){ VB.meldung='Bitte E-Mail und ein neues Passwort (mindestens 6 Zeichen) eingeben, dann nochmals «Konto eröffnen» tippen.'; return render(); }
       schritt(async()=>{ const r=await sbFetch('/auth/v1/signup?redirect_to='+encodeURIComponent(location.origin+location.pathname),{method:'POST',body:d});
-        if(r && r.access_token){ VB.eltern=sessAus(r); await vbKinderLaden(); }
-        else { VB.schritt='login'; VB.meldung='Fast geschafft: Supabase hat eine E-Mail an '+d.email+' geschickt. Bitte den Link darin antippen und danach hier anmelden.'; } }); };
+        if(r && r.access_token){ VB.eltern=sessAus(r); VB.pw=''; await vbKinderLaden(); }
+        else { VB.schritt='login'; VB.meldung='Fast geschafft! Wir haben eine E-Mail an '+d.email+' geschickt. Bitte darin auf den Bestätigungslink tippen, dann hierher zurückkommen und «Anmelden» tippen.'; } }); };
   }
   if(VB.schritt==='haushalt'){
     $('vbhhok').onclick=()=>{ const n=$('vbhh').value.trim(); if(!n){ VB.meldung='Bitte einen Namen eingeben.'; return render(); }
@@ -3276,6 +3284,8 @@ if(location.hash && /access_token|error_description/.test(location.hash)) try{ h
 if(S){ setInsel((S.lauf && !S.lauf.kiste && S.lauf.ins) || S.aktInsel || 'tier');
   [S.lauf, ...Object.values(S.laeufe||{})].forEach(L=>{ if(L && L.aufgaben) formenSetzen(S, L.aufgaben); }); }
 window.__wp = {S:()=>S, SV:()=>SV, syncJetzt, SATZ, zeige, speichern, satzZumVorlesen, setEltern:v=>{elternOk=v;}};   /* nur für Tests */
+{ let sp=false; try{ sp=localStorage.getItem(SPAETER)==='1'; }catch(e){}
+  if(!verbunden() && !(S && sp)){ ansicht='verbinden'; VB={schritt:'login',erst:true}; } }
 render();
 startAbgleich();
 })();
