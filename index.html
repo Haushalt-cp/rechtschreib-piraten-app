@@ -1837,7 +1837,8 @@ function migrieren(o){
   Object.values(o.ab||{}).forEach(a=>{ if(!a.punkte) a.punkte={richtig:0,gesamt:0}; });
   return o;
 }
-function speichern(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); speicherOk=true; }catch(e){ speicherOk=false; } }
+function speichern(){ if(S) S._t=Date.now(); try{ localStorage.setItem(KEY, JSON.stringify(S)); speicherOk=true; }catch(e){ speicherOk=false; }
+  if(verbunden()){ SV.geaendert=true; svSpeichern(); syncPlanen(); } }
 function heute(){ const d=new Date(); d.setDate(d.getDate()+(S?S.offset:0)); return datumStr(d); }
 function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
@@ -2053,9 +2054,9 @@ function zeichenZaehlen(z, ok){ const e=S.zeichen[z]||(S.zeichen[z]={richtig:0,f
 
 function zeige(v,p){ ansicht=v; parm=p||{}; render(); }
 function render(){
-  if(!S){ app.innerHTML=setupHTML(); return bindSetup(); }
-  if(ansicht!=='figur' && ansicht!=='elternPin' && ansicht!=='eltern' && !(S.figur&&S.figur.fertig)) ansicht='figur';
-  const f = {karte,insel,bucht,burg,spiel,rundeEnde,schatzwahl,kiste,kisteStart:starteKiste,laden:piratenladen,umkleide,figur,elternPin,eltern}[ansicht] || karte;
+  if(!S && ansicht!=='verbinden'){ app.innerHTML=setupHTML(); return bindSetup(); }
+  if(ansicht!=='figur' && ansicht!=='elternPin' && ansicht!=='eltern' && ansicht!=='verbinden' && !(S.figur&&S.figur.fertig)) ansicht='figur';
+  const f = {karte,insel,bucht,burg,spiel,rundeEnde,schatzwahl,kiste,kisteStart:starteKiste,laden:piratenladen,umkleide,figur,elternPin,eltern,verbinden}[ansicht] || karte;
   f();
   app.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>zeige(b.dataset.go));
 }
@@ -2089,9 +2090,11 @@ function setupHTML(){
     <h2>🏴‍☠️ Wortschatz-Piraten</h2>
     <label>Vorname oder Spitzname des Kindes</label><input id="sname" maxlength="20" autocomplete="off" autocorrect="off" spellcheck="false">
     ${speicherOk?'':'<div class="hinweis">⚠️ Dieser Browser erlaubt kein Speichern. Der Fortschritt geht beim Schliessen verloren.</div>'}
-    <button class="knopf gruen" id="sok">Los geht's!</button></div>`;
+    <button class="knopf gruen" id="sok">Los geht's!</button>
+    <p style="margin-top:22px;font-size:15px">Eltern: Gibt es für das Kind schon einen Fortschritt auf dem Server? <a href="#" id="swieder">Tablet verbinden und Fortschritt holen</a></p></div>`;
 }
 function bindSetup(){
+  document.getElementById('swieder').onclick=e=>{ e.preventDefault(); zeige('verbinden'); };
   document.getElementById('sok').onclick=()=>{
     const n=document.getElementById('sname').value.trim();
     if(!n){ document.getElementById('sname').focus(); return; }
@@ -2989,13 +2992,17 @@ function eltern(){
    <div class="zeile"><input id="nname" value="${esc(S.name)}" style="font-size:16px;padding:6px"><button class="knopf" id="nameok">Name ändern</button></div>
    <div class="zeile" style="margin-top:8px"><input id="npin" type="password" inputmode="numeric" maxlength="4" placeholder="neue PIN" style="font-size:16px;padding:6px;width:120px"><button class="knopf" id="pinneu">Eltern-PIN ändern</button><span id="pininfo"></span></div>
 
+   <h3>Speichern auf dem Server</h3>
+   ${serverBlockHTML()}
+
    <h3>Daten sichern</h3>
-   <div class="hinweis">Der Fortschritt wird nur auf diesem Tablet gespeichert. Zum Sichern oder zum Mitnehmen auf ein anderes Gerät: Text kopieren und z. B. in eine Notiz einfügen.</div>
+   <div class="hinweis">Zusätzlich zum Server lässt sich der Stand als Text sichern: kopieren und z. B. in eine Notiz einfügen.</div>
    <div class="zeile"><button class="knopf" id="kopie">Sicherung kopieren</button><span id="kopok"></span></div>
    <textarea id="imp" placeholder="Sicherung hier einfügen, um sie zu laden"></textarea>
    <div class="zeile"><button class="knopf" id="impok">Sicherung laden</button><span id="impinfo"></span></div>
 
    <h3>Zurücksetzen</h3>
+   ${verbunden()?'<div class="hinweis">Löscht alles auf diesem Tablet und trennt die Verbindung zum Server. Der Stand auf dem Server bleibt erhalten und kann wieder geholt werden.</div>':''}
    <button class="knopf rot" id="reset1">Alles löschen …</button>
    <span id="reset2" style="display:none">Wirklich alles löschen? <button class="knopf rot" id="resetJa">Ja, löschen</button> <button class="knopf" id="resetNein">Nein</button></span>
    <p style="margin-top:24px"><button class="knopf" id="abmelden">Eltern-Ansicht schliessen</button></p>
@@ -3028,15 +3035,249 @@ function eltern(){
   $('impok').onclick=()=>{ try{ const o=JSON.parse($('imp').value); if(!o||!o.name||!o.kiste) throw 0; o.reset=RESET_STAND; S=migrieren(o); speichern(); $('impinfo').textContent=' ✓ geladen'; setTimeout(render,600);}catch(e){ $('impinfo').textContent=' Das ist keine gültige Sicherung.'; } };
   $('reset1').onclick=()=>{ $('reset2').style.display='inline'; };
   $('resetNein').onclick=()=>{ $('reset2').style.display='none'; };
-  $('resetJa').onclick=()=>{ try{ localStorage.removeItem(KEY);}catch(e){} S=null; elternOk=false; render(); };
+  $('resetJa').onclick=()=>{ try{ localStorage.removeItem(KEY);}catch(e){} S=null; SV=null; svSpeichern(); elternOk=false; render(); };
+  serverBlockBinden($);
   $('abmelden').onclick=()=>{ elternOk=false; zeige('karte'); };
 }
 
+/* =========================================================================
+   SERVER (Supabase, Zürich) – Tablet koppeln, Stand speichern und laden
+   Das Tablet hat eine eigene, anonyme Geräte-Anmeldung. Gekoppelt wird es einmal
+   von den Eltern (E-Mail-Login) über einen Einmal-Code. Der Spielstand wird ohne
+   die Versuchsliste als Ganzes gespeichert; jede Eingabe einzeln in «versuch».
+   ========================================================================= */
+const SB_URL='https://ealhzqyaanftiuynwmbi.supabase.co', SB_KEY='sb_publishable_WtDXVst3oi1zO9IVB8wsZA_tbNed6D0';
+const SVKEY='akubine_server_v1';
+let SV=(()=>{ try{ return JSON.parse(localStorage.getItem(SVKEY))||null; }catch(e){ return null; } })();
+function svSpeichern(){ try{ if(SV) localStorage.setItem(SVKEY, JSON.stringify(SV)); else localStorage.removeItem(SVKEY); }catch(e){} }
+function verbunden(){ return !!(SV && SV.kind_id && SV.sess); }
+
+const SB_FEHLER={ invalid_credentials:'E-Mail oder Passwort stimmt nicht.', email_not_confirmed:'Bitte zuerst die E-Mail bestätigen (Link in der E-Mail von Supabase).',
+  user_already_exists:'Für diese E-Mail gibt es schon ein Konto. Bitte anmelden.', weak_password:'Das Passwort ist zu kurz (mindestens 6 Zeichen).',
+  over_email_send_rate_limit:'Zu viele E-Mails in kurzer Zeit. Bitte später nochmals versuchen.', anonymous_provider_disabled:'Anonyme Anmeldung ist bei Supabase ausgeschaltet.',
+  email_address_invalid:'Diese E-Mail-Adresse ist ungültig.', validation_failed:'Bitte E-Mail und Passwort prüfen.' };
+async function sbFetch(pfad, opt, sess){
+  opt=opt||{};
+  const h={apikey:SB_KEY,'Content-Type':'application/json'};
+  if(sess) h.Authorization='Bearer '+sess.access_token;
+  let r;
+  try{ r=await fetch(SB_URL+pfad,{method:opt.method||'GET',headers:Object.assign(h,opt.headers||{}),body:opt.body!==undefined?JSON.stringify(opt.body):undefined}); }
+  catch(e){ const f=new Error('Keine Verbindung zum Server. Ist das Tablet online?'); f.offline=true; throw f; }
+  const t=await r.text(); let d=null; try{ d=t?JSON.parse(t):null; }catch(e){ d=t; }
+  if(!r.ok){ const code=d&&(d.error_code||d.code); const m=SB_FEHLER[code]||(d&&(d.message||d.msg||d.error_description||d.error))||('Fehler '+r.status);
+    const f=new Error(m); f.status=r.status; f.code=code; throw f; }
+  return d;
+}
+function sessAus(d){ return {access_token:d.access_token, refresh_token:d.refresh_token, expires_at:d.expires_at||(Math.floor(Date.now()/1000)+(d.expires_in||3600)), user_id:d.user&&d.user.id}; }
+const rpc=(fn,args,sess)=>sbFetch('/rest/v1/rpc/'+fn,{method:'POST',body:args},sess);
+let erneuern=null;
+async function geraetSess(){
+  const s=SV.sess;
+  if(s.expires_at-90 > Date.now()/1000) return s;
+  if(!erneuern) erneuern=sbFetch('/auth/v1/token?grant_type=refresh_token',{method:'POST',body:{refresh_token:s.refresh_token}})
+    .then(d=>{ SV.sess=sessAus(d); svSpeichern(); return SV.sess; })
+    .catch(e=>{ if(e.status===400||e.status===401){ SV.fehler='Die Anmeldung des Tablets ist abgelaufen. Bitte in der Eltern-Ansicht neu verbinden.'; SV.getrennt=true; svSpeichern(); } throw e; })
+    .finally(()=>{ erneuern=null; });
+  return erneuern;
+}
+function standFuerServer(){ const o=Object.assign({},S); delete o.versuche; return o; }
+
+let syncTimer=null, syncLaeuft=false, syncNochmal=false;
+function syncPlanen(ms){ if(!verbunden()||SV.getrennt) return; clearTimeout(syncTimer); syncTimer=setTimeout(syncJetzt, ms==null?4000:ms); }
+async function syncJetzt(){
+  if(!verbunden()||SV.getrennt||!S) return;
+  if(syncLaeuft){ syncNochmal=true; return; }
+  syncLaeuft=true; clearTimeout(syncTimer);
+  try{
+    const sess=await geraetSess();
+    const neu=(S.versuche||[]).filter(v=>v && v.z>(SV.vz||''));
+    for(let i=0;i<neu.length;i+=200){
+      const teil=neu.slice(i,i+200);
+      await sbFetch('/rest/v1/versuch',{method:'POST',headers:{Prefer:'return=minimal'},body:teil.map(v=>({kind_id:SV.kind_id, zeitpunkt:v.z, uebung:v.form||null, satz_id:v.sid||null, eingabe:v.eingabe==null?null:String(v.eingabe), auswertung:v}))},sess);
+      SV.vz=teil[teil.length-1].z; svSpeichern();
+    }
+    if(SV.geaendert){
+      SV.geaendert=false;
+      const r=await rpc('stand_speichern',{p_kind_id:SV.kind_id, p_stand:standFuerServer(), p_basis_version:SV.version||0},sess);
+      if(r && r.ok) SV.version=r.version;
+      else { SV.version=r?r.version:SV.version; SV.geaendert=true; syncNochmal=true; }   // ein anderes Gerät hat gespeichert: dieses Tablet ist das Gerät des Kindes, sein Stand gilt
+    }
+    SV.letzt=new Date().toISOString(); SV.fehler=null; svSpeichern();
+  }catch(e){
+    if(SV){ SV.geaendert = SV.geaendert || true; if(!SV.getrennt) SV.fehler=e.message; svSpeichern(); }
+    clearTimeout(syncTimer); if(!(SV&&SV.getrennt)) syncTimer=setTimeout(syncJetzt, 60000);
+  }finally{
+    syncLaeuft=false;
+    if(syncNochmal){ syncNochmal=false; syncPlanen(800); }
+  }
+}
+async function versucheVomServer(kid, sess){
+  const alle=[];
+  for(let off=0; off<3000; off+=1000){
+    const rows=await sbFetch(`/rest/v1/versuch?select=auswertung&kind_id=eq.${kid}&order=zeitpunkt.desc&limit=1000&offset=${off}`,{},sess);
+    rows.forEach(r=>{ if(r.auswertung) alle.push(r.auswertung); });
+    if(rows.length<1000) break;
+  }
+  return alle.reverse();
+}
+function standUebernehmen(stand, versuche){
+  const o=Object.assign({}, stand); o.versuche=versuche||[]; o.reset=RESET_STAND;
+  S=migrieren(o);
+  try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){}
+  setInsel((S.lauf && !S.lauf.kiste && S.lauf.ins) || S.aktInsel || 'tier');
+  [S.lauf, ...Object.values(S.laeufe||{})].forEach(L=>{ if(L && L.aufgaben) formenSetzen(S, L.aufgaben); });
+}
+/* Beim Öffnen: Ist auf dem Server ein neuerer Stand (z. B. nach Gerätewechsel), wird er übernommen. */
+async function startAbgleich(){
+  if(!verbunden()||SV.getrennt) return;
+  try{
+    const sess=await geraetSess();
+    const rows=await sbFetch(`/rest/v1/kind?select=name,stand,stand_version&id=eq.${SV.kind_id}`,{},sess);
+    if(!rows.length){ SV.getrennt=true; SV.fehler='Dieses Tablet ist nicht mehr mit einem Kind verbunden. Bitte in der Eltern-Ansicht neu verbinden.'; svSpeichern(); return; }
+    const k=rows[0];
+    if(k.stand && k.stand_version>(SV.version||0) && (k.stand._t||0)>((S&&S._t)||0) && !SV.geaendert){
+      const spielt = ansicht==='spiel';
+      standUebernehmen(k.stand, S?S.versuche:[]); SV.version=k.stand_version; svSpeichern();
+      if(!spielt) render();
+    } else if(k.stand_version!==(SV.version||0)){ SV.version=k.stand_version; SV.geaendert=true; svSpeichern(); }
+  }catch(e){}
+  syncPlanen(1500);
+}
+window.addEventListener('online', ()=>syncPlanen(500));
+document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='hidden' && verbunden() && (SV.geaendert || (S && (S.versuche||[]).some(v=>v.z>(SV.vz||''))))) syncJetzt(); });
+
+function zeitText(iso){ if(!iso) return '–'; const d=new Date(iso); return d.toLocaleDateString('de-CH')+' '+d.toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'}); }
+function serverBlockHTML(){
+  if(!verbunden()) return `<div class="hinweis">Dieses Tablet ist noch nicht mit dem Server verbunden. Der Fortschritt liegt nur auf diesem Tablet.</div>
+    <button class="knopf gruen" data-go="verbinden">Mit dem Server verbinden</button>`;
+  const offen=SV.geaendert || (S.versuche||[]).some(v=>v.z>(SV.vz||''));
+  return `<p>✓ Verbunden mit dem Server als <b>${esc(SV.name||S.name)}</b> (Haushalt ${esc(SV.haushalt||'')}).<br>
+    Zuletzt gespeichert: <b>${zeitText(SV.letzt)}</b>${offen?' · noch nicht alles übertragen':''}</p>
+    ${SV.fehler?`<div class="hinweis">⚠️ ${esc(SV.fehler)}</div>`:''}
+    <div class="zeile"><button class="knopf" id="svjetzt">Jetzt speichern</button>${SV.getrennt?'<button class="knopf gruen" data-go="verbinden">Neu verbinden</button>':''}
+    <button class="knopf" id="svtrenn1">Verbindung trennen …</button><span id="svinfo"></span></div>
+    <span id="svtrenn2" style="display:none">Das Tablet speichert dann nur noch für sich. Der Stand auf dem Server bleibt erhalten. <button class="knopf rot" id="svtrennJa">Trennen</button> <button class="knopf" id="svtrennNein">Abbrechen</button></span>`;
+}
+function serverBlockBinden($){
+  if(!verbunden()) return;
+  $('svjetzt').onclick=async()=>{ $('svinfo').textContent=' …'; SV.geaendert=true; await syncJetzt(); render(); };
+  $('svtrenn1').onclick=()=>{ $('svtrenn2').style.display='inline'; };
+  $('svtrennNein').onclick=()=>{ $('svtrenn2').style.display='none'; };
+  $('svtrennJa').onclick=()=>{ SV=null; svSpeichern(); render(); };
+}
+
+/* ---- Verbinden (Eltern) ---- */
+let VB=null;   // {schritt, eltern, haushalt, kinder, meldung, wahl}
+function vbKopf(){ return `<header class="kopf"><button class="zur" id="vbzur">⬅</button><div class="titel">Mit dem Server verbinden</div><div></div></header>`; }
+function vbAbmelden(){ if(VB && VB.eltern){ const s=VB.eltern; sbFetch('/auth/v1/logout',{method:'POST'},s).catch(()=>{}); } VB=null; }
+async function vbKinderLaden(){
+  const hh=await sbFetch('/rest/v1/haushalt?select=id,name',{},VB.eltern);
+  if(!hh.length){ VB.schritt='haushalt'; return; }
+  VB.haushalt=hh[0];
+  VB.kinder=await sbFetch(`/rest/v1/kind?select=id,name,stand_version,aktualisiert_am,muenzen:stand->muenzen&haushalt_id=eq.${hh[0].id}&order=erstellt_am`,{},VB.eltern);
+  VB.schritt='kinder';
+}
+function verbinden(){
+  if(!VB) VB={schritt:'login'};
+  const m=VB.meldung?`<div class="hinweis">${esc(VB.meldung)}</div>`:'';
+  let inhalt='';
+  if(VB.schritt==='login') inhalt=`<h2>🔑 Eltern-Anmeldung</h2>
+    <p>Einmal pro Tablet: Ein Elternteil meldet sich an und wählt, zu welchem Kind dieses Tablet gehört. Danach speichert das Tablet den Fortschritt automatisch auf dem Server – das Kind merkt davon nichts.</p>
+    <label>E-Mail</label><input id="vbmail" type="email" autocomplete="username" autocapitalize="off" spellcheck="false">
+    <label>Passwort</label><input id="vbpw" type="password" autocomplete="current-password">
+    ${m}<div class="zeile"><button class="knopf gruen" id="vblogin">Anmelden</button><button class="knopf" id="vbneu">Neues Eltern-Konto</button></div>`;
+  else if(VB.schritt==='haushalt') inhalt=`<h2>🏠 Haushalt anlegen</h2>
+    <p>Zu diesem Konto gibt es noch keinen Haushalt.</p>
+    <label>Name des Haushalts (z. B. Familie Muster)</label><input id="vbhh" maxlength="60" autocomplete="off">
+    ${m}<button class="knopf gruen" id="vbhhok">Haushalt anlegen</button>
+    <h3>Oder: Einladung vom anderen Elternteil</h3>
+    <label>Code</label><input id="vbcode" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false">
+    <button class="knopf" id="vbcodeok">Code einlösen</button>`;
+  else if(VB.schritt==='kinder') inhalt=`<h2>👧👦 Zu welchem Kind gehört dieses Tablet?</h2>
+    <p>Haushalt: <b>${esc(VB.haushalt.name)}</b></p>${m}
+    <div class="wahl-liste" style="display:flex;flex-direction:column;gap:10px">
+    ${VB.kinder.map(k=>`<button class="knopf" data-kind="${k.id}">${esc(k.name)} <small style="font-weight:400">${k.stand_version?`· auf dem Server: ${k.muenzen||0} Münzen, zuletzt ${zeitText(k.aktualisiert_am)}`:'· noch kein Fortschritt auf dem Server'}</small></button>`).join('')}
+    </div>
+    <h3>Neues Kind</h3>
+    <div class="zeile"><input id="vbkind" maxlength="20" autocomplete="off" value="${S?esc(S.name):''}" placeholder="Vorname oder Spitzname" style="max-width:300px;margin:0"><button class="knopf gruen" id="vbkindok">Anlegen und verbinden</button></div>
+    <h3>Zweiter Elternteil</h3>
+    <div class="zeile"><button class="knopf" id="vbeinl">Einladungscode erstellen</button><span id="vbeinlcode"></span></div>`;
+  else if(VB.schritt==='wahl'){ const k=VB.wahl;
+    inhalt=`<h2>Welcher Fortschritt soll gelten?</h2>
+    <p>Für <b>${esc(k.name)}</b> gibt es schon einen Fortschritt auf dem Server, und auf diesem Tablet wird auch schon gespielt.</p>
+    <div class="wahl-liste" style="display:flex;flex-direction:column;gap:10px">
+    <button class="knopf" id="vbserver">☁️ Vom Server: ${k.muenzen||0} Münzen, zuletzt ${zeitText(k.aktualisiert_am)}</button>
+    <button class="knopf" id="vbtablet">📱 Von diesem Tablet: ${esc(S.name)}, ${S.muenzen} Münzen</button></div>
+    <p><small>Der andere Stand wird überschrieben.</small></p>${m}`; }
+  else if(VB.schritt==='laeuft') inhalt=`<h2>⏳ Einen Moment …</h2>${m}`;
+  else if(VB.schritt==='fertig') inhalt=`<h2>✓ Verbunden</h2><p>Dieses Tablet gehört jetzt zu <b>${esc(SV.name)}</b>. Der Fortschritt wird ab jetzt automatisch auf dem Server gespeichert.</p>
+    <button class="knopf gruen" id="vbfertig">Fertig</button>`;
+  app.innerHTML=`${vbKopf()}<div class="blatt eltern setup" style="max-width:640px">${inhalt}</div>`;
+  const $=id=>document.getElementById(id);
+  const zurueck=()=>{ vbAbmelden(); if(!S) zeige('karte'); else zeige(elternOk?'eltern':'karte'); };
+  $('vbzur').onclick=zurueck;
+  const fehler=e=>{ VB.meldung=e.message; if(VB.schritt==='laeuft') VB.schritt=VB.vorher||'login'; render(); };
+  const schritt=async(fn)=>{ VB.vorher=VB.schritt; VB.meldung=''; VB.schritt='laeuft'; render(); try{ await fn(); }catch(e){ return fehler(e); } render(); };
+  if(VB.schritt==='login'){
+    const daten=()=>({email:$('vbmail').value.trim(), password:$('vbpw').value});
+    $('vblogin').onclick=()=>{ const d=daten(); if(!d.email||!d.password){ VB.meldung='Bitte E-Mail und Passwort eingeben.'; return render(); }
+      schritt(async()=>{ VB.eltern=sessAus(await sbFetch('/auth/v1/token?grant_type=password',{method:'POST',body:d})); await vbKinderLaden(); }); };
+    $('vbneu').onclick=()=>{ const d=daten(); if(!d.email||!d.password){ VB.meldung='Bitte E-Mail und ein Passwort (mindestens 6 Zeichen) eingeben, dann nochmals «Neues Eltern-Konto» tippen.'; return render(); }
+      schritt(async()=>{ const r=await sbFetch('/auth/v1/signup?redirect_to='+encodeURIComponent(location.origin+location.pathname),{method:'POST',body:d});
+        if(r && r.access_token){ VB.eltern=sessAus(r); await vbKinderLaden(); }
+        else { VB.schritt='login'; VB.meldung='Fast geschafft: Supabase hat eine E-Mail an '+d.email+' geschickt. Bitte den Link darin antippen und danach hier anmelden.'; } }); };
+  }
+  if(VB.schritt==='haushalt'){
+    $('vbhhok').onclick=()=>{ const n=$('vbhh').value.trim(); if(!n){ VB.meldung='Bitte einen Namen eingeben.'; return render(); }
+      schritt(async()=>{ await rpc('haushalt_anlegen',{p_name:n},VB.eltern); await vbKinderLaden(); }); };
+    $('vbcodeok').onclick=()=>{ const c=$('vbcode').value.trim(); if(!c) return;
+      schritt(async()=>{ await rpc('einladung_einloesen',{p_code:c},VB.eltern); await vbKinderLaden(); }); };
+  }
+  if(VB.schritt==='kinder'){
+    app.querySelectorAll('[data-kind]').forEach(b=>b.onclick=()=>{ const k=VB.kinder.find(x=>x.id===b.dataset.kind);
+      if(k.stand_version && S && S.versuche && S.versuche.length){ VB.wahl=k; VB.schritt='wahl'; VB.meldung=''; return render(); }
+      schritt(()=>vbKoppeln(k, k.stand_version?'server':'tablet')); });
+    $('vbkindok').onclick=()=>{ const n=$('vbkind').value.trim(); if(!n){ VB.meldung='Bitte einen Namen eingeben.'; return render(); }
+      schritt(async()=>{ const r=await sbFetch('/rest/v1/kind',{method:'POST',headers:{Prefer:'return=representation'},body:{haushalt_id:VB.haushalt.id, name:n}},VB.eltern);
+        await vbKoppeln(Object.assign({stand_version:0}, r[0]), 'tablet'); }); };
+    $('vbeinl').onclick=async()=>{ try{ const c=await rpc('einladung_erstellen',{p_typ:'eltern'},VB.eltern);
+      $('vbeinlcode').innerHTML=` Code: <b style="font-size:22px;letter-spacing:3px">${esc(c)}</b> – 30 Minuten gültig. Der andere Elternteil legt damit ein eigenes Konto an und wählt «Code einlösen».`; }catch(e){ $('vbeinlcode').textContent=' '+e.message; } };
+  }
+  if(VB.schritt==='wahl'){
+    $('vbserver').onclick=()=>schritt(()=>vbKoppeln(VB.wahl,'server'));
+    $('vbtablet').onclick=()=>schritt(()=>vbKoppeln(VB.wahl,'tablet'));
+  }
+  if(VB.schritt==='fertig') $('vbfertig').onclick=()=>{ VB=null; if(!S.figur||!S.figur.fertig) zeige('figur'); else zeige(elternOk?'eltern':'karte'); };
+}
+/* Tablet mit einem Kind koppeln. quelle: 'server' (Stand vom Server holen) oder 'tablet' (Stand dieses Tablets hochladen) */
+async function vbKoppeln(k, quelle){
+  const code=await rpc('einladung_erstellen',{p_typ:'geraet', p_kind_id:k.id},VB.eltern);
+  const geraet = (SV && SV.sess && !SV.getrennt) ? await geraetSess().catch(()=>null) : null;
+  const sess = geraet || sessAus(await sbFetch('/auth/v1/signup',{method:'POST',body:{data:{}}}));
+  await rpc('einladung_einloesen',{p_code:code, p_bezeichnung:'Tablet von '+k.name},sess);
+  const neu={kind_id:k.id, name:k.name, haushalt:VB.haushalt.name, sess, version:0, vz:'', geaendert:false};
+  if(quelle==='server' && k.stand_version){
+    const rows=await sbFetch(`/rest/v1/kind?select=stand,stand_version&id=eq.${k.id}`,{},sess);
+    const versuche=await versucheVomServer(k.id, sess);
+    standUebernehmen(rows[0].stand, versuche);
+    neu.version=rows[0].stand_version; neu.vz=versuche.length?versuche[versuche.length-1].z:'';
+  } else {
+    if(!S){ S=neuerStand(k.name,''); S.reset=RESET_STAND; }
+    neu.version=k.stand_version||0; neu.geaendert=true;
+  }
+  SV=neu; svSpeichern();
+  speichern();
+  vbAbmelden(); VB={schritt:'fertig'};
+  await syncJetzt();
+}
+
 S=laden();
+if(location.hash && /access_token|error_description/.test(location.hash)) try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){}
 if(S){ setInsel((S.lauf && !S.lauf.kiste && S.lauf.ins) || S.aktInsel || 'tier');
   [S.lauf, ...Object.values(S.laeufe||{})].forEach(L=>{ if(L && L.aufgaben) formenSetzen(S, L.aufgaben); }); }
-window.__wp = {S:()=>S, SATZ, zeige, speichern, satzZumVorlesen, setEltern:v=>{elternOk=v;}};   /* nur für Tests */
+window.__wp = {S:()=>S, SV:()=>SV, syncJetzt, SATZ, zeige, speichern, satzZumVorlesen, setEltern:v=>{elternOk=v;}};   /* nur für Tests */
 render();
+startAbgleich();
 })();
 </script>
 <script>
