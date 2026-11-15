@@ -1,7 +1,7 @@
 // Wortschatz-Piraten – Service Worker
 // Seite: zuerst Netz (damit Updates sofort ankommen), offline aus dem Zwischenspeicher.
-const CACHE = 'wsp-v1';
-const KERN = ['./', './index.html', './manifest.webmanifest',
+const CACHE = 'wsp-v2';
+const KERN = ['./', './index.html', './manifest.webmanifest', './manifest-test.webmanifest',
   './icons/icon-180.png', './icons/icon-192.png', './icons/icon-512.png', './icons/maskable-512.png'];
 
 self.addEventListener('install', e => {
