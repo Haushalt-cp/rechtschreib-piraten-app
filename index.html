@@ -102,8 +102,8 @@ header.kopf{display:flex;align-items:center;gap:10px;margin-bottom:12px}
 .wahl-liste{display:flex;flex-direction:column;gap:10px;margin:12px 0}
 .wahl-liste .knopf{text-align:left}
 .wahl-liste small{font-size:16px;font-weight:400}
-.meer{grid-template-columns:repeat(6,1fr);grid-template-areas:"heim heim heim kiste kiste kiste" "tier tier schiff schiff b1 b2";grid-template-rows:auto auto}
-.heiminsel{grid-area:heim}.kisteninsel{grid-area:kiste}.schiff-zelle{grid-area:schiff}.insel.p-tier{grid-area:tier}.insel.b1{grid-area:b1;min-height:110px}.insel.b2{grid-area:b2;min-height:110px}
+.meer{grid-template-columns:repeat(6,1fr);grid-template-areas:"heim heim heim kiste kiste kiste" "tier tier schiff schiff b0 b0" "tier tier schiff schiff b1 b2";grid-template-rows:auto auto auto}
+.heiminsel{grid-area:heim}.kisteninsel{grid-area:kiste}.schiff-zelle{grid-area:schiff}.insel.p-tier{grid-area:tier}.insel.b0{grid-area:b0;min-height:110px}.insel.b1{grid-area:b1;min-height:110px}.insel.b2{grid-area:b2;min-height:110px}
 .insel.frei{font-size:44px}
 .kisteninsel{position:relative;background:rgba(255,255,255,.10);border-radius:28px;padding:8px 10px 12px;display:flex;flex-direction:column;align-items:center;color:#fff}
 .kisteninsel.spielbar{background:rgba(242,182,50,.28);outline:4px solid var(--gold);outline-offset:-6px}
@@ -115,6 +115,23 @@ header.kopf{display:flex;align-items:center;gap:10px;margin-bottom:12px}
 .schiff-zelle .schiff-bild{max-width:200px}
 .bucht{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;margin:14px 0}
 .ort-bild.burg-bild{font-size:0}
+.ort-bild.lager-bild{font-size:0}
+.besuch-reihe{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:6px 0 4px}
+.besuch{background:rgba(255,255,255,.14);border-radius:24px;padding:8px 12px 10px;display:flex;flex-direction:column;align-items:center;color:#fff;font-size:17px;width:150px}
+.besuch-fig{width:110px;height:150px}.besuch-fig.klein{width:90px;height:122px;margin-top:28px}
+.besuch-fig svg,.besuch-bild svg{width:100%;height:100%}
+.besuch-bild{height:120px}
+.besuch.ankunft{animation:ankunft 1.4s cubic-bezier(.2,.8,.3,1.2) both}
+@keyframes ankunft{from{transform:translateX(-120vw) rotate(-8deg)}70%{transform:translateX(12px) rotate(3deg)}to{transform:none}}
+@media (prefers-reduced-motion: reduce){.besuch.ankunft{animation:none}}
+.ort-bild.lager-bild svg,.lager-gross svg{width:100%;height:auto}
+.lager-gross{display:block;width:100%;max-width:820px;margin:12px auto 22px;padding:10px}
+.lager-ding{cursor:pointer}
+.flamme{transform-box:fill-box;transform-origin:50% 100%;animation:flackern .5s ease-in-out infinite alternate}
+@keyframes flackern{from{transform:scale(1,1) skewX(-2deg)}to{transform:scale(.94,1.08) skewX(3deg)}}
+.dampf{animation:dampf 2.4s ease-in-out infinite}
+@keyframes dampf{0%{opacity:0;transform:translateY(6px)}40%{opacity:.9}100%{opacity:0;transform:translateY(-10px)}}
+@media (prefers-reduced-motion: reduce){.flamme,.dampf{animation:none}}
 .ort-bild.burg-bild svg{width:100%;height:auto}
 .burg-gross{background:linear-gradient(#bfe6fb,#e9f6fd 70%);border-radius:28px;padding:10px;box-shadow:0 6px 0 rgba(0,0,0,.15)}
 .burg-gross svg{width:100%;height:auto;display:block;max-height:52vh}
@@ -233,7 +250,7 @@ h3{margin:18px 0 8px;font-size:21px}
 .mini-fig{display:inline-block;width:62px;height:84px;background:rgba(255,255,255,.18);border-radius:16px;padding:2px 4px}
 .schiff-zelle{background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:700}
 .schiff-zelle .schiff-bild{width:100%;max-width:260px;aspect-ratio:240/190;animation:schweb 3s ease-in-out infinite}
-@media (orientation:portrait){.meer{flex:none;grid-template-columns:1fr 1fr;grid-template-areas:"heim kiste" "tier schiff" "b1 b2"}.meer>*{min-height:150px}.insel.aktiv{min-height:190px}}
+@media (orientation:portrait){.meer{flex:none;grid-template-columns:1fr 1fr;grid-template-areas:"heim kiste" "tier schiff" "b0 b1" "b2 b2"}.insel.b2{justify-self:center;width:50%}.meer>*{min-height:150px}.insel.aktiv{min-height:190px}}
 @media (max-width:700px){.gestalten{grid-template-columns:1fr}.fig-gross{max-width:220px}}
 /* Eltern */
 .eltern{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;-webkit-user-select:text;user-select:text}
@@ -251,7 +268,7 @@ h3{margin:18px 0 8px;font-size:21px}
 .zeile{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 @media (max-width:640px){
   .satz,.luecke{font-size:30px}.ganzsatz{font-size:26px}.bildzone{font-size:80px}
-  .meer{grid-template-columns:1fr 1fr;grid-template-areas:"heim kiste" "tier schiff" "b1 b2"}.heim-name{font-size:20px}.insel.aktiv{min-height:170px}
+  .meer{grid-template-columns:1fr 1fr;grid-template-areas:"heim kiste" "tier schiff" "b0 b1" "b2 b2"}.heim-name{font-size:20px}.insel.aktiv{min-height:170px}
   .pfad{grid-template-columns:1fr 1fr}.schatzwahl button{font-size:44px}
 }
 </style>
@@ -268,15 +285,18 @@ h3{margin:18px 0 8px;font-size:21px}
 /* Inseln der Seereise (14.11.2026): Wildtatzen-Insel = Level 1 Lückenwort, Kokosbucht = Level 2 Wortgruppen mit 2 und 3 Wörtern
    (dazwischen immer wieder Mehrzahl), Donnerfels = Level 3: 4 Wörter und erste Sätze. Auf Kokosbucht und Donnerfels wird immer alles geschrieben (auf Strichen). */
 const INSELN = {
-  tier:  {id:'tier',   name:'Wildtatzen-Insel', bild:'🐾', auf:'auf der Wildtatzen-Insel', vor:null,
+  tier:  {id:'tier',   name:'Wildtatzen-Insel', bild:'🐾', auf:'auf der Wildtatzen-Insel', vor:null, art:'luecke',
           ab:['Am Teich und auf der Wiese','Im Wald','Auf dem Bauernhof','Am Meer','Auf dem Piratenschiff','Das grosse Tierfest'],
           abBild:['🐸','🦉','🐐','🐋','🏴‍☠️','🎉']},
-  kokos: {id:'kokos',  name:'Kokosbucht', bild:'🥥', auf:'in der Kokosbucht', vor:'tier',
+  muschel:{id:'muschel', name:'Muschelmarkt', bild:'🐚', auf:'auf dem Muschelmarkt', vor:'tier', art:'luecke',
+          ab:['Am Marktstand','Der Marktkalender','Beim Bäcker','Hinter dem Markt','Spiele auf dem Marktplatz','Feierabend auf dem Markt'],
+          abBild:['🧺','📅','🥖','🌳','⚽','🌙']},
+  kokos: {id:'kokos',  name:'Kokosbucht', bild:'🥥', auf:'in der Kokosbucht', vor:'muschel', art:'satz',
           ab:['Im Haus', 'Rund um den Tag', 'Ein und eine', 'Die braune Katze', 'Ein kleiner Hund', 'Bunt gemischt'], abBild:['🏠','☀️','☝️','🐈','🐕','🎨']},
-  donner:{id:'donner', name:'Donnerfels', bild:'⛈️', auf:'auf dem Donnerfels', vor:'kokos',
+  donner:{id:'donner', name:'Donnerfels', bild:'⛈️', auf:'auf dem Donnerfels', vor:'kokos', art:'satz',
           ab:['Im Haus, im Garten', 'Mit Herz', 'Für dich und mich', 'Erste Sätze', 'Wie ist es?', 'Was machst du?'], abBild:['🏡','❤️','🎁','✏️','🌙','🚲']}
 };
-const INSEL_REIHE = ['tier','kokos','donner'];
+const INSEL_REIHE = ['tier','muschel','kokos','donner'];
 let INSEL = INSELN.tier, ABENTEUER = INSEL.ab, ABENTEUER_BILD = INSEL.abBild;
 function setInsel(id){ INSEL = INSELN[id] || INSELN.tier; ABENTEUER = INSEL.ab; ABENTEUER_BILD = INSEL.abBild; if(typeof S!=='undefined' && S) S.aktInsel = INSEL.id; }
 const DATEN = `
@@ -756,6 +776,377 @@ const DATEN_ZUSATZ = `
 6|Wir haben sechs Hühner.|sechs
 `;
 
+/* Lückenwort-Sätze mit Insel, Abenteuer und Runde (claude/inhalte/muschelmarkt_saetze.csv):
+   Muschelmarkt (16.11.2026) und die Monate Januar–Juni auf der Wildtatzen-Insel (je Abenteuer Runde 2 und 4).
+   Je Zeile: Insel | Abenteuer | Runde (0 = Zusatz) | Satz-ID | Satz | Lösung | Bild | Zusatz */
+const DATEN_LUECKE = `
+tier|1|2|S000989|Im Januar ist es sehr kalt.|Januar|⛄|0
+tier|1|4|S000990|Das neue Jahr beginnt im Januar.|Januar|🎆|0
+tier|1|0|S000991|Im Januar fahren wir Schlitten.|Januar||1
+tier|2|2|S000992|Im Februar ist Fasnacht.|Februar|🎭|0
+tier|2|4|S000993|Der Februar ist ein kurzer Monat.|Februar|📅|0
+tier|2|0|S000994|Im Februar schlafen die Igel noch.|Februar||1
+tier|3|2|S000995|Im März blühen die ersten Blumen.|März|🌷|0
+tier|3|4|S000996|Im März beginnt der Frühling.|März|🌱|0
+tier|3|0|S000997|Im März wird es wärmer.|März||1
+tier|4|2|S000998|Im April regnet es oft.|April|🌦️|0
+tier|4|4|S000999|Im April suchen wir Ostereier.|April|🥚|0
+tier|4|0|S001000|Der April hat dreissig Tage.|April||1
+tier|5|2|S001001|Im Mai ist es schön warm.|Mai|🌸|0
+tier|5|4|S001002|Im Mai blühen die Kirschen.|Mai|🍒|0
+tier|5|0|S001003|Mein Fest ist im Mai.|Mai||1
+tier|6|2|S001004|Im Juni ist es lange hell.|Juni|☀️|0
+tier|6|4|S001005|Im Juni essen wir Erdbeeren.|Juni|🍓|0
+tier|6|0|S001006|Im Juni beginnt der Sommer.|Juni||1
+muschel|1|1|S001007|Der Pirat kauft eine schöne Sache.|Sache||0
+muschel|1|1|S001008|Das Messer ist scharf.|Messer|🔪|0
+muschel|1|1|S001009|Der Schlüssel passt in die Tür.|Schlüssel|🔑|0
+muschel|1|1|S001010|Ich kaufe neue Stiefel.|Stiefel|👢|0
+muschel|1|1|S001011|Wir brauchen ein Seil.|brauchen||0
+muschel|1|1|S001012|Wir bringen den Korb nach Hause.|bringen|🧺|0
+muschel|1|1|S001013|Ich darf eine Muschel kaufen.|darf|🐚|0
+muschel|1|1|S001014|Weisst du, was das ist?|was||0
+muschel|1|1|S001015|Am Stand gibt es eine rote Schaufel.|Schaufel||0
+muschel|1|1|S001016|Im Korb liegt ein Würfel.|Würfel|🎲|0
+muschel|1|2|S001017|Blau ist meine liebste Farbe.|Farbe|🎨|0
+muschel|1|2|S001018|Mama sucht ihr Handy.|Handy|📱|0
+muschel|1|2|S001019|Die Kinder sagen Danke.|sagen||0
+muschel|1|2|S001020|Wir zeigen dir den Markt.|zeigen||0
+muschel|1|2|S001021|Wir packen alles in den Korb.|packen|🧺|0
+muschel|1|2|S001022|Wir schenken Oma eine Blume.|schenken|🎁|0
+muschel|1|2|S001023|Im Juli ist es heiss.|Juli|☀️|0
+muschel|1|2|S001024|Sag mir, wer da kommt.|wer||0
+muschel|1|2|S001025|Am Mantel fehlt ein Knopf.|Knopf|🔘|0
+muschel|1|2|S001026|Mit der Schere schneide ich Papier.|Schere|✂️|0
+muschel|1|3|S001027|Das ist eine lustige Sache.|Sache||0
+muschel|1|3|S001028|Papa schneidet das Brot mit dem Messer.|Messer|🔪|0
+muschel|1|3|S001029|Ich finde meinen Schlüssel nicht.|Schlüssel|🔑|0
+muschel|1|3|S001030|Der Pirat zieht seine Stiefel an.|Stiefel|👢|0
+muschel|1|3|S001031|Die Piraten brauchen ein neues Segel.|brauchen|⛵|0
+muschel|1|3|S001032|Akubine will mir einen Apfel bringen.|bringen|🍎|0
+muschel|1|3|S001033|Mama sagt, ich darf mitkommen.|darf||0
+muschel|1|3|S001034|Weisst du, wie spät es ist?|wie||0
+muschel|1|3|S001035|Ich grabe mit der Schaufel im Sand.|Schaufel||0
+muschel|1|3|S001036|Ich werfe eine Sechs mit dem Würfel.|Würfel|🎲|0
+muschel|1|4|S001037|Welche Farbe hat dein Schiff?|Farbe|🎨|0
+muschel|1|4|S001038|Das Handy klingelt laut.|Handy|📱|0
+muschel|1|4|S001039|Was sagen die Kinder?|sagen||0
+muschel|1|4|S001040|Kannst du mir den Weg zeigen?|zeigen||0
+muschel|1|4|S001041|Am Abend packen wir den Stand ein.|packen||0
+muschel|1|4|S001042|Was schenken wir Papa?|schenken|🎁|0
+muschel|1|4|S001043|Im Juli haben wir Ferien.|Juli|🏖️|0
+muschel|1|4|S001044|Weisst du, wo der Markt ist?|wo||0
+muschel|1|4|S001045|Der Knopf ist aus Holz.|Knopf|🔘|0
+muschel|1|4|S001046|Die Schere liegt auf dem Tisch.|Schere|✂️|0
+muschel|1|0|S001047|Das ist eine gute Sache.|Sache||1
+muschel|1|0|S001048|Das Messer liegt neben dem Teller.|Messer||1
+muschel|1|0|S001049|Der Schlüssel ist aus Gold.|Schlüssel||1
+muschel|1|0|S001050|Meine Stiefel sind nass.|Stiefel||1
+muschel|1|0|S001051|Wir brauchen mehr Holz.|brauchen||1
+muschel|1|0|S001052|Die Kinder bringen Kuchen mit.|bringen||1
+muschel|1|0|S001053|Heute darf ich lange spielen.|darf||1
+muschel|1|0|S001054|Rot ist eine schöne Farbe.|Farbe||1
+muschel|1|0|S001055|Papa hat ein neues Handy.|Handy||1
+muschel|1|0|S001056|Wir sagen laut Hallo.|sagen||1
+muschel|1|0|S001057|Die Kinder zeigen ihre Bilder.|zeigen||1
+muschel|1|0|S001058|Wir packen die Koffer.|packen||1
+muschel|1|0|S001059|Wir schenken dir ein Buch.|schenken||1
+muschel|1|0|S001060|Mein Geburtstag ist im Juli.|Juli||1
+muschel|1|0|S001061|Ich weiss, was du suchst.|was||1
+muschel|1|0|S001062|Ich weiss, wer das war.|wer||1
+muschel|1|0|S001063|Zeig mir, wie das geht.|wie||1
+muschel|1|0|S001064|Ich weiss, wo der Schatz ist.|wo||1
+muschel|2|1|S001065|Am Montag ist der Markt offen.|Montag||0
+muschel|2|1|S001066|Am Dienstag gehen wir schwimmen.|Dienstag|🏊|0
+muschel|2|1|S001067|Am Mittwoch kommt Oma zu Besuch.|Mittwoch|👵|0
+muschel|2|1|S001068|Am Donnerstag backen wir einen Kuchen.|Donnerstag|🎂|0
+muschel|2|1|S001069|Heute ist ein schöner Tag.|Tag|☀️|0
+muschel|2|1|S001070|Eine Woche hat sieben Tage.|Woche|📅|0
+muschel|2|1|S001071|Ich will einen Apfel kaufen.|will|🍎|0
+muschel|2|1|S001072|Wir gehen morgen auf den Markt.|morgen||0
+muschel|2|1|S001073|Am Stand hängt eine helle Lampe.|Lampe|💡|0
+muschel|2|1|S001074|Die Kerze brennt die ganze Nacht.|Kerze|🕯️|0
+muschel|2|2|S001075|Am Freitag ist die Woche fast vorbei.|Freitag||0
+muschel|2|2|S001076|Am Samstag schlafen wir lange.|Samstag|😴|0
+muschel|2|2|S001077|Am Sonntag gehen wir in den Wald.|Sonntag|🌲|0
+muschel|2|2|S001078|Wir warten eine Stunde.|Stunde|⏰|0
+muschel|2|2|S001079|Ich habe keine Zeit.|Zeit|⏳|0
+muschel|2|2|S001080|Am Ende der Strasse ist ein Stand.|Ende||0
+muschel|2|2|S001081|Im August ist es warm.|August|☀️|0
+muschel|2|2|S001082|Der Markt ist immer am Montag.|immer||0
+muschel|2|2|S001083|Am Sonntag ist ein grosses Fest.|Fest|🎉|0
+muschel|2|2|S001084|Die Reise zum Markt ist lang.|Reise||0
+muschel|2|3|S001085|Jeden Montag gehen wir zur Schule.|Montag|🏫|0
+muschel|2|3|S001086|Am Dienstag turnen wir in der Halle.|Dienstag||0
+muschel|2|3|S001087|Am Mittwoch haben wir am Nachmittag frei.|Mittwoch||0
+muschel|2|3|S001088|Am Donnerstag regnet es.|Donnerstag|🌧️|0
+muschel|2|3|S001089|Der Tag ist schnell vorbei.|Tag||0
+muschel|2|3|S001090|Nächste Woche haben wir Ferien.|Woche||0
+muschel|2|3|S001091|Akubine will eine Banane.|will|🍌|0
+muschel|2|3|S001092|Ich spiele oft mit Akubine.|oft||0
+muschel|2|3|S001093|Die Lampe ist kaputt.|Lampe|💡|0
+muschel|2|3|S001094|Auf dem Tisch steht eine Kerze.|Kerze|🕯️|0
+muschel|2|4|S001095|Am Freitag backt Papa Pizza.|Freitag|🍕|0
+muschel|2|4|S001096|Am Samstag ist der Markt voll.|Samstag||0
+muschel|2|4|S001097|Am Sonntag besuchen wir Oma.|Sonntag||0
+muschel|2|4|S001098|Nach einer Stunde sind wir da.|Stunde|⏰|0
+muschel|2|4|S001099|Es ist Zeit zum Essen.|Zeit||0
+muschel|2|4|S001100|Die Geschichte hat ein gutes Ende.|Ende|📖|0
+muschel|2|4|S001101|Im August sind wir am Meer.|August|🏖️|0
+muschel|2|4|S001102|Akubine ist nie müde.|nie||0
+muschel|2|4|S001103|Wir feiern ein Fest am Strand.|Fest|🎉|0
+muschel|2|4|S001104|Die Reise mit dem Schiff macht Spass.|Reise|⛵|0
+muschel|2|0|S001105|Am Montag ist Turnen.|Montag||1
+muschel|2|0|S001106|Am Dienstag kommt die Tante.|Dienstag||1
+muschel|2|0|S001107|Heute ist Mittwoch.|Mittwoch||1
+muschel|2|0|S001108|Morgen ist Donnerstag.|Donnerstag||1
+muschel|2|0|S001109|Am Freitag essen wir Fisch.|Freitag||1
+muschel|2|0|S001110|Am Samstag ist Markt.|Samstag||1
+muschel|2|0|S001111|Heute ist Sonntag, da ist keine Schule.|Sonntag||1
+muschel|2|0|S001112|Jeden Tag lese ich ein Buch.|Tag||1
+muschel|2|0|S001113|Die Woche ist schnell vorbei.|Woche||1
+muschel|2|0|S001114|Das Spiel dauert eine Stunde.|Stunde||1
+muschel|2|0|S001115|Wir haben viel Zeit.|Zeit||1
+muschel|2|0|S001116|Am Ende gibt es Kuchen.|Ende||1
+muschel|2|0|S001117|Ich will mit dir spielen.|will||1
+muschel|2|0|S001118|Im August blühen viele Blumen.|August||1
+muschel|2|0|S001119|Ich komme morgen wieder.|morgen||1
+muschel|2|0|S001120|Akubine ist immer lustig.|immer||1
+muschel|2|0|S001121|Wir lachen oft.|oft||1
+muschel|2|0|S001122|Der Hund bellt nie.|nie||1
+muschel|3|1|S001123|Im Ofen ist eine grosse Hitze.|Hitze|🔥|0
+muschel|3|1|S001124|Papa gibt Öl in die Pfanne.|Öl|🍳|0
+muschel|3|1|S001125|Heute kommt ein Gast zum Essen.|Gast||0
+muschel|3|1|S001126|Wir backen einen Kuchen.|backen|🎂|0
+muschel|3|1|S001127|Wir schneiden das Brot.|schneiden|🍞|0
+muschel|3|1|S001128|Die Kekse schmecken gut.|schmecken|🍪|0
+muschel|3|1|S001129|Ich kann einen Zopf backen.|kann||0
+muschel|3|1|S001130|Das Brot ist klein, aber fein.|aber|🍞|0
+muschel|3|1|S001131|Oma backt in der Küche.|Küche||0
+muschel|3|1|S001132|Die Suppe kocht im Topf.|Topf|🍲|0
+muschel|3|2|S001133|Wir sitzen auf der Bank.|Bank|🪑|0
+muschel|3|2|S001134|Ich habe eine Frage.|Frage|❓|0
+muschel|3|2|S001135|Wir riechen das frische Brot.|riechen|👃|0
+muschel|3|2|S001136|Nach dem Essen spülen wir das Geschirr.|spülen|🍽️|0
+muschel|3|2|S001137|Wir machen einen Zopf.|machen||0
+muschel|3|2|S001138|Der Kuchen ist lecker.|lecker|😋|0
+muschel|3|2|S001139|Im September ernten wir Äpfel.|September|🍎|0
+muschel|3|2|S001140|Willst du Brot oder Kuchen?|oder||0
+muschel|3|2|S001141|Ich esse den Kuchen mit der Gabel.|Gabel|🍴|0
+muschel|3|2|S001142|Zum Kuchen trinke ich Milch.|Milch|🥛|0
+muschel|3|3|S001143|Die Hitze im Sommer ist gross.|Hitze|☀️|0
+muschel|3|3|S001144|Das Öl in der Pfanne ist heiss.|Öl|🍳|0
+muschel|3|3|S001145|Der Gast isst ein Stück Kuchen.|Gast|🍰|0
+muschel|3|3|S001146|Am Sonntag backen wir Brot.|backen|🍞|0
+muschel|3|3|S001147|Wir schneiden den Kuchen in Stücke.|schneiden|🍰|0
+muschel|3|3|S001148|Die Äpfel schmecken süss.|schmecken|🍎|0
+muschel|3|3|S001149|Akubine kann sprechen.|kann||0
+muschel|3|3|S001150|Zuerst backen wir, dann essen wir.|dann||0
+muschel|3|3|S001151|In der Küche riecht es nach Brot.|Küche||0
+muschel|3|3|S001152|Der Topf ist voll Nudeln.|Topf|🍝|0
+muschel|3|4|S001153|Die Bank ist aus Holz.|Bank|🪑|0
+muschel|3|4|S001154|Die Frage ist schwer.|Frage||0
+muschel|3|4|S001155|Hunde riechen sehr gut.|riechen|🐕|0
+muschel|3|4|S001156|Wir spülen die Teller.|spülen|🍽️|0
+muschel|3|4|S001157|Was machen wir heute?|machen||0
+muschel|3|4|S001158|Das Eis ist sehr lecker.|lecker|🍦|0
+muschel|3|4|S001159|Im September hat Mama Geburtstag.|September|🎂|0
+muschel|3|4|S001160|Der Kuchen ist schon fertig.|schon|🎂|0
+muschel|3|4|S001161|Die Gabel liegt auf dem Teller.|Gabel|🍴|0
+muschel|3|4|S001162|Im Glas ist frische Milch.|Milch|🥛|0
+muschel|3|0|S001163|Bei der Hitze trinken wir viel.|Hitze||1
+muschel|3|0|S001164|Wir brauchen Öl für den Salat.|Öl||1
+muschel|3|0|S001165|Wir haben einen Gast.|Gast||1
+muschel|3|0|S001166|Oma will Kekse backen.|backen||1
+muschel|3|0|S001167|Wir schneiden Papier.|schneiden||1
+muschel|3|0|S001168|Die Kirschen schmecken süss.|schmecken||1
+muschel|3|0|S001169|Der Fisch kann schwimmen.|kann||1
+muschel|3|0|S001170|Opa sitzt auf der Bank.|Bank||1
+muschel|3|0|S001171|Hast du eine Frage?|Frage||1
+muschel|3|0|S001172|Die Blumen riechen gut.|riechen||1
+muschel|3|0|S001173|Papa will die Tassen spülen.|spülen||1
+muschel|3|0|S001174|Wir machen ein Feuer.|machen||1
+muschel|3|0|S001175|Die Suppe ist lecker.|lecker||1
+muschel|3|0|S001176|Im September beginnt der Herbst.|September||1
+muschel|3|0|S001177|Ich bin müde, aber froh.|aber||1
+muschel|3|0|S001178|Ist das ein Hund oder ein Wolf?|oder||1
+muschel|3|0|S001179|Wir essen, dann spielen wir.|dann||1
+muschel|3|0|S001180|Es ist schon dunkel.|schon||1
+muschel|4|1|S001181|Im Frühling blühen die Blumen.|Frühling|🌷|0
+muschel|4|1|S001182|Im Sommer baden wir im See.|Sommer|☀️|0
+muschel|4|1|S001183|Das Wetter ist heute schön.|Wetter|🌤️|0
+muschel|4|1|S001184|Die Blüte ist rosa.|Blüte|🌸|0
+muschel|4|1|S001185|Der Vogel sitzt auf dem Ast.|Ast|🐦|0
+muschel|4|1|S001186|Die Blumen wachsen schnell.|wachsen|🌱|0
+muschel|4|1|S001187|Ich soll die Blumen giessen.|soll|🌻|0
+muschel|4|1|S001188|Schau, hier wächst ein Pilz.|hier|🍄|0
+muschel|4|1|S001189|Hinter dem Markt ist eine grosse Wiese.|Wiese||0
+muschel|4|1|S001190|Am Himmel ist eine kleine Wolke.|Wolke|☁️|0
+muschel|4|2|S001191|Im Herbst fallen die Blätter.|Herbst|🍂|0
+muschel|4|2|S001192|Im Winter liegt Schnee.|Winter|⛄|0
+muschel|4|2|S001193|Im Bach schwimmen kleine Fische.|Bach|🐟|0
+muschel|4|2|S001194|Die Schnecke ist langsam.|Schnecke|🐌|0
+muschel|4|2|S001195|Wir graben ein Loch.|graben||0
+muschel|4|2|S001196|Die Äpfel fallen vom Baum.|fallen|🍎|0
+muschel|4|2|S001197|Im Oktober ist es windig.|Oktober|🍂|0
+muschel|4|2|S001198|Siehst du den Baum dort?|dort|🌳|0
+muschel|4|2|S001199|Nach dem Regen ist die Wiese nass.|Regen|🌧️|0
+muschel|4|2|S001200|Am Bach sitzt ein Frosch.|Frosch|🐸|0
+muschel|4|3|S001201|Im Frühling kommen die Vögel zurück.|Frühling|🐦|0
+muschel|4|3|S001202|Der Sommer ist heiss.|Sommer|☀️|0
+muschel|4|3|S001203|Bei schlechtem Wetter bleiben wir drinnen.|Wetter|🌧️|0
+muschel|4|3|S001204|Auf der Blüte sitzt eine Biene.|Blüte|🐝|0
+muschel|4|3|S001205|Der Ast ist dünn.|Ast||0
+muschel|4|3|S001206|Im Garten wachsen Tomaten.|wachsen|🍅|0
+muschel|4|3|S001207|Papa sagt, ich soll eine Jacke anziehen.|soll|🧥|0
+muschel|4|3|S001208|Schau, da ist eine Schnecke!|da|🐌|0
+muschel|4|3|S001209|Die Kühe fressen auf der Wiese.|Wiese|🐄|0
+muschel|4|3|S001210|Die Wolke sieht aus wie ein Hase.|Wolke|☁️|0
+muschel|4|4|S001211|Im Herbst werden die Blätter bunt.|Herbst|🍁|0
+muschel|4|4|S001212|Im Winter fahren wir Schlitten.|Winter|🛷|0
+muschel|4|4|S001213|Der Bach ist kalt.|Bach||0
+muschel|4|4|S001214|Die Schnecke trägt ein Haus.|Schnecke|🐌|0
+muschel|4|4|S001215|Die Kinder graben im Sand.|graben||0
+muschel|4|4|S001216|Die Blätter fallen auf den Weg.|fallen|🍂|0
+muschel|4|4|S001217|Im Oktober sind die Bäume bunt.|Oktober|🍁|0
+muschel|4|4|S001218|Der Frosch sitzt unten am Bach.|unten|🐸|0
+muschel|4|4|S001219|Im Regen brauchen wir Stiefel.|Regen|🌧️|0
+muschel|4|4|S001220|Der Frosch springt in den Bach.|Frosch|🐸|0
+muschel|4|0|S001221|Der Frühling ist da.|Frühling||1
+muschel|4|0|S001222|Im Sommer essen wir viel Glace.|Sommer||1
+muschel|4|0|S001223|Wie ist das Wetter heute?|Wetter||1
+muschel|4|0|S001224|Die Blüte riecht gut.|Blüte||1
+muschel|4|0|S001225|Der Affe hängt am Ast.|Ast||1
+muschel|4|0|S001226|Kinder wachsen schnell.|wachsen||1
+muschel|4|0|S001227|Ich soll leise sein.|soll||1
+muschel|4|0|S001228|Im Herbst ist es kühl.|Herbst||1
+muschel|4|0|S001229|Der Winter ist kalt.|Winter||1
+muschel|4|0|S001230|Wir springen über den Bach.|Bach||1
+muschel|4|0|S001231|Im Salat ist eine Schnecke.|Schnecke||1
+muschel|4|0|S001232|Die Hunde graben im Garten.|graben||1
+muschel|4|0|S001233|Die Blätter fallen leise.|fallen||1
+muschel|4|0|S001234|Im Oktober sammeln wir Kastanien.|Oktober||1
+muschel|4|0|S001235|Ich bin hier!|hier||1
+muschel|4|0|S001236|Der Schatz ist dort.|dort||1
+muschel|4|0|S001237|Ist Mama schon da?|da||1
+muschel|4|0|S001238|Die Katze wartet unten.|unten||1
+muschel|5|1|S001239|Ich kicke mit dem Fuss.|Fuss|🦶|0
+muschel|5|1|S001240|Turnen ist gut für den Körper.|Körper|💪|0
+muschel|5|1|S001241|Der Ball fliegt ins Tor.|Tor|⚽|0
+muschel|5|1|S001242|Wir fangen den Ball.|fangen||0
+muschel|5|1|S001243|Die Kinder kicken auf dem Platz.|kicken|⚽|0
+muschel|5|1|S001244|Wir raten, wer gewinnt.|raten|🤔|0
+muschel|5|1|S001245|Ich muss jetzt nach Hause.|muss|🏠|0
+muschel|5|1|S001246|Ich habe drei Bälle.|drei||0
+muschel|5|1|S001247|Mein Knie tut weh.|Knie||0
+muschel|5|1|S001248|Ich liege auf dem Bauch.|Bauch||0
+muschel|5|2|S001249|Der Weg führt zum Markt.|Weg||0
+muschel|5|2|S001250|Die Stufe ist hoch.|Stufe||0
+muschel|5|2|S001251|Der Drache fliegt hoch am Himmel.|Drache|🪁|0
+muschel|5|2|S001252|In der Schule rechnen wir.|rechnen|🔢|0
+muschel|5|2|S001253|Wir sitzen im Kreis.|sitzen||0
+muschel|5|2|S001254|Ich will das Tor treffen.|treffen|🎯|0
+muschel|5|2|S001255|Im November wird es früh dunkel.|November|🌙|0
+muschel|5|2|S001256|Der Hund hat vier Beine.|vier|🐕|0
+muschel|5|2|S001257|Der Pfeil trifft die Mitte.|Pfeil|🎯|0
+muschel|5|2|S001258|Wir werfen Bälle in den Korb.|werfen|🏀|0
+muschel|5|3|S001259|Mein Fuss ist nass.|Fuss|🦶|0
+muschel|5|3|S001260|Wir waschen den Körper.|Körper|🧼|0
+muschel|5|3|S001261|Wir schiessen ein Tor.|Tor|⚽|0
+muschel|5|3|S001262|Die Katzen fangen Mäuse.|fangen|🐈|0
+muschel|5|3|S001263|Wir kicken den Ball über den Platz.|kicken|⚽|0
+muschel|5|3|S001264|Kannst du raten, was ich habe?|raten|🤔|0
+muschel|5|3|S001265|Akubine muss niesen.|muss|🤧|0
+muschel|5|3|S001266|Das Spiel dauert acht Minuten.|acht||0
+muschel|5|3|S001267|Die Hose hat ein Loch am Knie.|Knie|👖|0
+muschel|5|3|S001268|Nach dem Essen ist mein Bauch voll.|Bauch||0
+muschel|5|4|S001269|Wir laufen den Weg entlang.|Weg||0
+muschel|5|4|S001270|Ich springe von der Stufe.|Stufe||0
+muschel|5|4|S001271|Mein Drache ist rot und gelb.|Drache|🪁|0
+muschel|5|4|S001272|Wir rechnen mit Muscheln.|rechnen|🐚|0
+muschel|5|4|S001273|Die Vögel sitzen auf dem Dach.|sitzen|🐦|0
+muschel|5|4|S001274|Wir treffen uns am Markt.|treffen||0
+muschel|5|4|S001275|Im November ist es neblig.|November|🌫️|0
+muschel|5|4|S001276|Das Geschenk ist von Oma.|von|🎁|0
+muschel|5|4|S001277|Ich male einen Pfeil auf die Karte.|Pfeil|➡️|0
+muschel|5|4|S001278|Die Piraten werfen den Anker.|werfen|⚓|0
+muschel|5|0|S001279|Am Fuss habe ich einen Schuh.|Fuss||1
+muschel|5|0|S001280|Der Körper braucht Wasser.|Körper||1
+muschel|5|0|S001281|Das Tor ist offen.|Tor||1
+muschel|5|0|S001282|Kannst du den Ball fangen?|fangen||1
+muschel|5|0|S001283|Die Jungen kicken gern.|kicken||1
+muschel|5|0|S001284|Wir raten ein Rätsel.|raten||1
+muschel|5|0|S001285|Jetzt muss ich gehen.|muss||1
+muschel|5|0|S001286|Wir finden den Weg.|Weg||1
+muschel|5|0|S001287|Pass auf die Stufe auf!|Stufe||1
+muschel|5|0|S001288|Der Drache hängt im Baum.|Drache||1
+muschel|5|0|S001289|Ich kann gut rechnen.|rechnen||1
+muschel|5|0|S001290|Wir sitzen am Tisch.|sitzen||1
+muschel|5|0|S001291|Wir treffen den Ball.|treffen||1
+muschel|5|0|S001292|Im November ist es kalt.|November||1
+muschel|5|0|S001293|Wir sind drei Kinder.|drei||1
+muschel|5|0|S001294|Das Auto hat vier Räder.|vier||1
+muschel|5|0|S001295|Die Spinne hat acht Beine.|acht||1
+muschel|5|0|S001296|Das ist ein Brief von Papa.|von||1
+muschel|6|1|S001297|Ich hatte einen schönen Traum.|Traum|💭|0
+muschel|6|1|S001298|Wir denken an Oma.|denken|💭|0
+muschel|6|1|S001299|Ich kann das kaum glauben.|glauben|😮|0
+muschel|6|1|S001300|Wir wissen den Weg nach Hause.|wissen|🏠|0
+muschel|6|1|S001301|Wir können gut rechnen.|können|🔢|0
+muschel|6|1|S001302|Wir müssen jetzt gehen.|müssen||0
+muschel|6|1|S001303|Wir dürfen noch ein Eis essen.|dürfen|🍦|0
+muschel|6|1|S001304|Akubine sagt ja.|ja||0
+muschel|6|1|S001305|Ich male ein Herz für Mama.|Herz|❤️|0
+muschel|6|1|S001306|Die Kinder hüpfen vor Freude.|Freude|🎉|0
+muschel|6|2|S001307|Wir kennen den Mann am Stand.|kennen||0
+muschel|6|2|S001308|Wir danken dem Bäcker.|danken|🙏|0
+muschel|6|2|S001309|Der König ist sehr reich.|reich|💰|0
+muschel|6|2|S001310|Wir wollen morgen wiederkommen.|wollen||0
+muschel|6|2|S001311|Wir sollen leise sein.|sollen|🤫|0
+muschel|6|2|S001312|Wir lassen die Laterne brennen.|lassen|🏮|0
+muschel|6|2|S001313|Im Dezember ist Weihnachten.|Dezember|🎄|0
+muschel|6|2|S001314|Ich sage nein zum Spinat.|nein||0
+muschel|6|2|S001315|Wir wünschen euch eine gute Nacht.|wünschen|🌙|0
+muschel|6|2|S001316|Schreib deinen Name auf das Blatt.|Name|✏️|0
+muschel|6|3|S001317|Im Traum fliege ich wie Akubine.|Traum|💭|0
+muschel|6|3|S001318|Die Kinder denken an den Schatz.|denken|💰|0
+muschel|6|3|S001319|Wir glauben dir.|glauben||0
+muschel|6|3|S001320|Die Piraten wissen, wo der Schatz ist.|wissen|🗺️|0
+muschel|6|3|S001321|Die Vögel können fliegen.|können|🐦|0
+muschel|6|3|S001322|Die Kinder müssen ins Bett.|müssen|🛏️|0
+muschel|6|3|S001323|Die Kinder dürfen lange wach bleiben.|dürfen||0
+muschel|6|3|S001324|Weisst du, warum der Himmel blau ist?|warum||0
+muschel|6|3|S001325|Mein Herz klopft schnell.|Herz|❤️|0
+muschel|6|3|S001326|Akubine hat grosse Freude.|Freude||0
+muschel|6|4|S001327|Die Kinder kennen alle Wörter.|kennen|⭐|0
+muschel|6|4|S001328|Wir danken dir für das Geschenk.|danken|🎁|0
+muschel|6|4|S001329|Mit dem Schatz sind wir reich.|reich|💰|0
+muschel|6|4|S001330|Die Piraten wollen den Schatz finden.|wollen|🗺️|0
+muschel|6|4|S001331|Die Kinder sollen die Zähne putzen.|sollen|🪥|0
+muschel|6|4|S001332|Wir lassen den Drachen fliegen.|lassen|🪁|0
+muschel|6|4|S001333|Im Dezember backen wir Guetzli.|Dezember|🍪|0
+muschel|6|4|S001334|Weisst du, wann der Markt beginnt?|wann||0
+muschel|6|4|S001335|Die Kinder wünschen sich ein Pony.|wünschen|🐴|0
+muschel|6|4|S001336|Der Name von meinem Hund ist Bello.|Name|🐕|0
+muschel|6|0|S001337|Das war nur ein Traum.|Traum||1
+muschel|6|0|S001338|Wir denken nach.|denken||1
+muschel|6|0|S001339|Ich kann es nicht glauben.|glauben||1
+muschel|6|0|S001340|Wir wissen es nicht.|wissen||1
+muschel|6|0|S001341|Wir kennen den Weg.|kennen||1
+muschel|6|0|S001342|Wir danken Akubine.|danken||1
+muschel|6|0|S001343|Der Pirat ist reich an Gold.|reich||1
+muschel|6|0|S001344|Wir können schon schwimmen.|können||1
+muschel|6|0|S001345|Wir müssen uns beeilen.|müssen||1
+muschel|6|0|S001346|Wir dürfen mitspielen.|dürfen||1
+muschel|6|0|S001347|Wir wollen ein Lied singen.|wollen||1
+muschel|6|0|S001348|Was sollen wir mitbringen?|sollen||1
+muschel|6|0|S001349|Wir lassen den Hund laufen.|lassen||1
+muschel|6|0|S001350|Im Dezember liegt oft Schnee.|Dezember||1
+muschel|6|0|S001351|Die Antwort ist ja.|ja||1
+muschel|6|0|S001352|Akubine schüttelt den Kopf und sagt nein.|nein||1
+muschel|6|0|S001353|Ich weiss nicht, warum er weint.|warum||1
+muschel|6|0|S001354|Sag mir, wann du kommst.|wann||1
+`;
 /* Kokosbucht und Donnerfels (claude/inhalte/kokosbucht_saetze.csv, donnerfels_saetze.csv, kokosbucht_reserve.csv)
    Je Zeile: Insel | Abenteuer | Runde | Satz-ID | Lösung | Bild | Einzahl (bei Mehrzahl) | Wortformen | Zusatz */
 const DATEN_L2 = `
@@ -1327,7 +1718,13 @@ const SCHAETZE = [
   ['Muschel','🐚','alle'],['Seestern','🌟','alle'],['Bunte Feder','🪶','alle'],['Kokosnuss','🥥','alle'],['Würfel','🎲','alle'],
   ['Banane für Akubine','🍌','alle'],['Keks für Akubine','🍪','alle'],['Perle','🦪','alle'],['Goldener Ohrring','💛','alle'],
   ['Goldener Schlüssel','🔑','alle'],['Flaschenpost','🍾','alle'],['Sanduhr','⏳','alle'],['Laterne','🏮','alle'],['Schiffsglocke','🔔','alle'],
-  ['Edelstein','💎','alle'],['Krebs','🦀','alle'],['Rettungsring','🛟','alle'],['Fass','🛢️','alle'],['Schildkröte','🐢','alle']
+  ['Edelstein','💎','alle'],['Krebs','🦀','alle'],['Rettungsring','🛟','alle'],['Fass','🛢️','alle'],['Schildkröte','🐢','alle'],
+  // Wünsche der Kinder (16.11.2026): Sachen für Akubine, Essen und Trinken, Lagerfeuer
+  ['Augenklappe für Akubine','🏴‍☠️','alle'],['Sonnenbrille für Akubine','🕶️','alle'],['Fliege für Akubine','🎀','alle'],
+  ['Piratenhut für Akubine','🎩','alle'],['Krone für Akubine','👑','alle'],
+  ['Feuerholz','🪵','alle'],['Kochkessel','🫕','alle'],['Pfanne','🍳','alle'],
+  ['Brot','🍞','alle'],['Käse','🧀','alle'],['Apfel','🍎','alle'],['Fisch','🐟','alle'],['Cervelat','🌭','alle'],['Kuchen','🍰','alle'],
+  ['Frisches Wasser','💧','alle'],['Saft','🧃','alle'],['Milch','🥛','alle'],['Tee','🍵','alle']
 ];
 
 /* Einstellungen (alle in der Eltern-Ansicht änderbar) */
@@ -1388,6 +1785,12 @@ const ZUSATZ = DATEN_ZUSATZ.trim().split('\n').map((zeile,i)=>{
   return satzObjekt(HAUPT.length+i+1, +a, 0, satz, loes, '', WORTKEY[loes] || ('T:'+loes), true);
 });
 HAUPT.concat(ZUSATZ).forEach(s=>{ s.ins='tier'; });
+const LUECKE = DATEN_LUECKE.trim().split('\n').map(zeile=>{
+  const [ins,a,r,id,satz,loes,bild,zus] = zeile.split('|');
+  const o = satzObjekt(+id.slice(1), +a, +r, satz, loes, bild, WORTKEY[loes] || ('T:'+loes), zus==='1');
+  o.ins = ins; if(bild && !BILD[loes]) BILD[loes] = bild;
+  return o;
+});
 const L2 = DATEN_L2.trim().split('\n').map(zeile=>{
   const [ins,a,r,id,text,bild,hinweis,fids,zus] = zeile.split('|');
   const o = satzObjekt(+id.slice(1), +a, +r, text, '', bild, '', zus==='1');
@@ -1398,7 +1801,7 @@ const L2 = DATEN_L2.trim().split('\n').map(zeile=>{
   o.fid = WORTKEY[nomen] || ('T:'+nomen);
   return o;
 });
-const SAETZE = HAUPT.concat(ZUSATZ, L2);
+const SAETZE = HAUPT.concat(ZUSATZ, LUECKE, L2);
 const SATZ = Object.fromEntries(SAETZE.map(s=>[s.id,s]));
 function keyFuer(wort){ return WORTKEY[wort] || ('T:'+wort); }
 
@@ -1409,6 +1812,48 @@ function fuell(t,o){ return t.replace(/\{(\w+)\}/g,(_,k)=> (o[k]!==undefined? o[
 /* =========================================================================
    PIRATENBURG – Bausatz (Feedback 14.11.2026): Teile werden der Reihe nach gekauft
    ========================================================================= */
+/* Besuch auf der Pirateninsel (Idee der Eltern 16.11.2026): Ticket im Laden, der Besuch bleibt.
+   Namen pro Kind in der Eltern-Ansicht änderbar; Figur und Sprüche gehören zur Rolle. {name} = Name des Besuchs, {anrede} = Kapitänin/Kapitän */
+const BESUCH = [
+  {id:'grummli',  name:'Oberpirat Opa Grummli',    rolle:'Opa: Kapitänshut, Bart, Brille um den Hals', preis:110,
+   sprueche:['Ahoi! {name} ist an Bord!','Gut gemacht, {anrede}!','Wo ist meine Brille? Ach, um den Hals!']},
+  {id:'grosi',    name:'Smutje Grosi',             rolle:'Köchin: Kochmütze, Schürze, Kochlöffel', preis:110,
+   sprueche:['Ich habe dir Guetzli mitgebracht!','Hast du Hunger? Ich koche dir eine Suppe.','{name} ist stolz auf dich!']},
+  {id:'mama',     name:'Piratenkönigin Mama',      rolle:'Königin: Krone und Umhang', preis:85,
+   sprueche:['Die Piratenkönigin grüsst dich!','Ich bin so stolz auf dich, {anrede}!','Was für eine schöne Insel!']},
+  {id:'papa',     name:'Piraten-Ausguck Papa',     rolle:'Ausguck: Fernrohr und Kopftuch', preis:85,
+   sprueche:['Land in Sicht!','Ich sehe schon die nächste Insel!','Ahoi, {anrede}! Weiter so!']},
+  {id:'schwester',name:'Piratenkobold Schwester',  rolle:'Kobold: klein, mit Zipfelmütze', preis:60,
+   sprueche:['Hihi! Ich bin der Piratenkobold!','Fang mich doch!','Ich verstecke mich hinter der Palme!']}
+];
+/* Figur eines Besuchs (gleicher Stil wie die Kinderfigur) */
+function besuchSVG(id, haut){
+  haut = haut || FARBEN_HAUT[1];
+  const grau='#cfcfcf';
+  const f = {grummli:{art:'pirat', haar:grau, kopftuch:'ohne', hemd:'blau', an:{kopf:'Kapitänshut mit Feder', koerper:'Mantel', fuesse:'Stiefel'}},
+             grosi:{art:'piratin', haar:grau, kopftuch:'ohne', hemd:'rot', an:{}},
+             mama:{art:'piratin', haar:FARBEN_HAAR[1], kopftuch:'ohne', hemd:'lila', an:{kopf:'Krone', koerper:'Gewand mit Goldknöpfen', hals:'Kette aus Muscheln'}},
+             papa:{art:'pirat', haar:FARBEN_HAAR[0], kopftuch:'ohne', hemd:'grün', an:{kopf:'Kopftuch mit Totenkopf', hand:'Fernrohr', guertel:'Gürtel mit Schnalle'}},
+             schwester:{art:'piratin', haar:FARBEN_HAAR[3], kopftuch:'ohne', hemd:'pink', an:{}}}[id];
+  if(!f) return '';
+  f.haut = haut;
+  let x = '';
+  if(id==='grummli') x = `<path d="M76,96 Q78,150 110,158 Q142,150 144,96 Q130,120 110,118 Q90,120 76,96 Z" fill="#f4f4f4" stroke="#cfcfcf" stroke-width="2"/>
+     <path d="M94,110 Q110,100 126,110 Q110,116 94,110 Z" fill="#e4e4e4" stroke="#cfcfcf" stroke-width="1.5"/>
+     <path d="M100,130 Q96,160 101,170 M120,130 Q124,160 119,170" stroke="#3a3a3a" stroke-width="1.6" fill="none"/>
+     <circle cx="101" cy="177" r="8" fill="rgba(190,225,255,.6)" stroke="#2a2a2a" stroke-width="2.6"/><circle cx="119" cy="177" r="8" fill="rgba(190,225,255,.6)" stroke="#2a2a2a" stroke-width="2.6"/><path d="M109,177 L111,177" stroke="#2a2a2a" stroke-width="2.6"/>`;
+  if(id==='grosi') x = `<path d="M86,150 L134,150 L142,216 L78,216 Z" fill="#fff" stroke="#ddd" stroke-width="2"/><path d="M94,150 L92,134 M126,150 L128,134" stroke="#fff" stroke-width="4"/>
+     <path d="M98,176 Q110,184 122,176" stroke="#e05a9a" stroke-width="3" fill="none"/>
+     <path d="M80,64 L84,32 Q72,12 92,12 Q100,-4 112,8 Q126,-6 132,12 Q150,12 136,32 L140,64 Z" fill="#fff" stroke="#d9d9d9" stroke-width="2"/>
+     <rect x="76" y="56" width="68" height="14" rx="5" fill="#fff" stroke="#d9d9d9" stroke-width="2"/>
+     <rect x="159" y="132" width="7" height="66" rx="3.5" fill="#b07a45"/><ellipse cx="162.5" cy="128" rx="10" ry="14" fill="#b07a45"/>`;
+  if(id==='mama') x = `<path d="M74,132 Q48,200 56,268 L78,262 L82,142 Z M146,132 Q172,200 164,268 L142,262 L138,142 Z" fill="#8a4fd1" opacity=".92"/>
+     <path d="M74,132 L146,132" stroke="#f2c230" stroke-width="5" stroke-linecap="round"/>`;
+  if(id==='schwester') x = `<path d="M66,78 Q110,44 154,78 Q140,26 176,-4 Q120,4 66,78 Z" fill="#2f9a5a"/><circle cx="176" cy="-4" r="8" fill="#f2c230"/>
+     <path d="M66,78 Q110,60 154,78" stroke="#1f6e40" stroke-width="4" fill="none"/>
+     <circle cx="104" cy="104" r="2" fill="#b5482a" opacity=".5"/><circle cx="118" cy="100" r="2" fill="#b5482a" opacity=".5"/><circle cx="111" cy="108" r="2" fill="#b5482a" opacity=".5"/>`;
+  return figurSVG(f, {ohneAkubine:true}).replace(/<\/svg>$/, x+'</svg>');
+}
 const BURG_TEILE = [
   ['Fundament',40],['Mauer links',45],['Mauer rechts',45],['Burgtor',50],['Turm links',60],
   ['Turm rechts',60],['Zugbrücke',55],['Fahnen',50],['Kanonen',70],['Grosser Turm',100]
@@ -1569,7 +2014,7 @@ var LEICHT_HAEUFIG_ = new Set('der die das den dem des ein eine einen einem eine
 const SCHWER_RX = /qu|ck|tz|ie|ä|ö|ü|ß|v|ph|th|chs|pf|x|y|([bdfglmnprstk])\1|[aeiou]h|^sp|^st|c(?!h)/i;
 function satzLeicht(s){ return s.words.every(w=>LEICHT_HAEUFIG.has(w.toLowerCase()) || !SCHWER_RX.test(w)); }
 function formenSetzen(S, liste){
-  liste.forEach(t=>{ if(!t.fertig){ const x=SATZ[t.sid]; t.form = (x && x.ins!=='tier') ? 'satz' : 'luecke'; } });
+  liste.forEach(t=>{ if(!t.fertig){ const x=SATZ[t.sid]; t.form = (x && INSELN[x.ins] && INSELN[x.ins].art==='satz') ? 'satz' : 'luecke'; } });
   return liste;
 }
 /* Schatzkisten-Runde: nur Wörter aus der Schatzkiste, jedes bis 2× in verschiedenen Sätzen */
@@ -1589,7 +2034,7 @@ function baueKisteRunde(S, heute){
 function baueRunde(S, a, r, heute, wiederholung, bereitsImDurchgang){
   const imDurchgang = new Set(bereitsImDurchgang);
   const haupt = SAETZE.filter(s=>!s.zusatz && s.ins===INSEL.id && s.a===a && s.r===r);
-  const ganz = INSEL.id!=='tier';
+  const ganz = INSEL.art==='satz';
   let normal;
   if(!wiederholung || ganz){
     normal = haupt;
@@ -1667,11 +2112,20 @@ const SCHATZ_PLATZ = {
   'Säbel':'hand','Pistole':'hand','Fernrohr':'hand','Kompass':'hand','Schatzkarte':'hand',
   'Halsband':'tierHals','Mütze für das Haustier':'tierKopf',
   'Goldener Ohrring':'ohr','Laterne':'laterne','Schiffsglocke':'glocke','Rettungsring':'ring','Fass':'fass',
-  'Muschel':'truhe','Seestern':'truhe','Bunte Feder':'truhe','Kokosnuss':'truhe','Würfel':'truhe','Banane für Akubine':'truhe','Keks für Akubine':'truhe',
+  'Muschel':'truhe','Seestern':'truhe','Bunte Feder':'truhe','Würfel':'truhe',
+  'Augenklappe für Akubine':'tierGesicht','Sonnenbrille für Akubine':'tierGesicht','Fliege für Akubine':'tierHals',
+  'Piratenhut für Akubine':'tierKopf','Krone für Akubine':'tierKopf',
+  // Lagerfeuer auf der Pirateninsel (nicht zum Anziehen)
+  'Feuerholz':'feuer','Kochkessel':'feuer','Pfanne':'feuer',
+  'Kokosnuss':'essen','Banane für Akubine':'essen','Keks für Akubine':'essen',
+  'Brot':'essen','Käse':'essen','Apfel':'essen','Fisch':'essen','Cervelat':'essen','Kuchen':'essen',
+  'Frisches Wasser':'trinken','Saft':'trinken','Milch':'trinken','Tee':'trinken',
   'Perle':'truhe','Goldener Schlüssel':'truhe','Flaschenpost':'truhe','Sanduhr':'truhe','Edelstein':'truhe','Krebs':'truhe','Schildkröte':'truhe',
   'Kanone':'kanone','Segel mit Muster':'segel','Flagge':'flagge','Flagge mit Tatze':'flagge','Galionsfigur':'galion','Anker aus Gold':'anker'
 };
 const AM_SCHIFF = new Set(['kanone','segel','flagge','galion','anker','laterne','glocke','ring','fass']);
+const AM_FEUER = new Set(['feuer','essen','trinken']);
+function anziehbar(p){ return !!p && p!=='truhe' && !AM_FEUER.has(p); }
 const HAND_BILD = {'Säbel':'🗡️','Pistole':'🔫','Fernrohr':'🔭','Kompass':'🧭','Schatzkarte':'🗺️'};
 
 /* Akubine als gezeichnete Comic-Figur (Papagei) */
@@ -1690,7 +2144,19 @@ function akubineInnen(){
   <path d="M76 52 Q82 58 88 56" stroke="#7a5a10" stroke-width="2.5" fill="none" stroke-linecap="round"/>
   <ellipse cx="46" cy="47" rx="6" ry="3.5" fill="#ff9d9d" opacity=".75"/>`;
 }
-function akubineSVG(){ return `<svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Akubine">${akubineInnen()}</svg>`; }
+/* Sachen, die Akubine trägt (in Akubines Koordinaten, viewBox 0 0 100 120) */
+function akubineDeko(an){
+  an = an||{}; let s='';
+  if(an.tierHals==='Halsband') s += `<path d="M36 60 Q56 72 76 58" fill="none" stroke="#e8b020" stroke-width="5" stroke-linecap="round"/><circle cx="56" cy="67" r="4.5" fill="#d64545"/>`;
+  if(an.tierHals==='Fliege für Akubine') s += `<path d="M56 64 L42 56 L42 72 Z M56 64 L70 56 L70 72 Z" fill="#2f6fd6" stroke="#1d4a99" stroke-width="2" stroke-linejoin="round"/><circle cx="56" cy="64" r="4.5" fill="#1d4a99"/><circle cx="47" cy="60" r="1.6" fill="#fff"/><circle cx="65" cy="68" r="1.6" fill="#fff"/>`;
+  if(an.tierGesicht==='Augenklappe für Akubine') s += `<path d="M32 26 L80 46" stroke="#1a1a1a" stroke-width="3.5" stroke-linecap="round"/><ellipse cx="66" cy="36" rx="11" ry="11.5" fill="#1a1a1a"/><path d="M60 31 Q64 28 68 30" stroke="#555" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+  if(an.tierGesicht==='Sonnenbrille für Akubine') s += `<path d="M53 33 L34 30" stroke="#1d2a3a" stroke-width="3.5" stroke-linecap="round"/><rect x="52" y="27" width="27" height="17" rx="7" fill="#1d2a3a"/><path d="M57 32 L65 32" stroke="#7fa6d6" stroke-width="2.5" stroke-linecap="round"/>`;
+  if(an.tierKopf==='Mütze für das Haustier') s += `<text x="52" y="24" font-size="34" text-anchor="middle">🧢</text>`;
+  if(an.tierKopf==='Piratenhut für Akubine') s += `<path d="M24 22 Q56 -16 90 22 Q56 10 24 22 Z" fill="#1d1d1d"/><path d="M24 22 Q56 10 90 22" fill="none" stroke="#f2c230" stroke-width="3.5"/><circle cx="57" cy="7" r="5" fill="#fff"/><circle cx="55" cy="6" r="1.4" fill="#1d1d1d"/><circle cx="59" cy="6" r="1.4" fill="#1d1d1d"/>`;
+  if(an.tierKopf==='Krone für Akubine') s += `<path d="M38 18 L40 -2 L49 9 L56 -6 L63 9 L72 -2 L74 18 Z" fill="#f2c230" stroke="#c99512" stroke-width="2.5" stroke-linejoin="round"/><circle cx="56" cy="11" r="3.5" fill="#d64545"/><circle cx="45" cy="13" r="2.5" fill="#2f6fd6"/><circle cx="67" cy="13" r="2.5" fill="#2f9a5a"/>`;
+  return s;
+}
+function akubineSVG(an){ return `<svg viewBox="0 -10 100 130" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Akubine">${akubineInnen()}${akubineDeko(an)}</svg>`; }
 /* Schatztruhe (zu oder offen mit Gold) */
 function truheSVG(offen){
   const deckel = offen
@@ -1784,9 +2250,7 @@ function figurSVG(f, opt){
   if(an.hand && HAND_BILD[an.hand]) s += `<text x="166" y="214" font-size="48" text-anchor="middle">${HAND_BILD[an.hand]}</text>`;
   // Akubine auf der Schulter
   if(!opt.ohneAkubine){
-    s += `<svg x="30" y="90" width="48" height="58" viewBox="0 0 100 120">${akubineInnen()}</svg>`;
-    if(an.tierHals) s += `<path d="M44,118 Q56,128 70,120" fill="none" stroke="#e8b020" stroke-width="4" stroke-linecap="round"/><circle cx="57" cy="125" r="3.5" fill="#d64545"/>`;
-    if(an.tierKopf) s += `<text x="52" y="94" font-size="24" text-anchor="middle">🧢</text>`;
+    s += `<svg x="30" y="85" width="48" height="63" viewBox="0 -10 100 130" overflow="visible">${akubineInnen()}${akubineDeko(an)}</svg>`;
   }
   return s + `</svg>`;
 }
@@ -2048,7 +2512,7 @@ function kopf(titel, zurueck){
   return `<header class="kopf">${zk}
     <div class="titel">${titel||''}</div><div class="muenzen" id="mz">🪙 ${S.muenzen}</div></header>`;
 }
-function aku(text, stimmung){ return `<div class="aku"><div class="papagei ${stimmung||''}">${akubineSVG()}</div><div class="blase">${text?esc(text):''}</div></div>`; }
+function aku(text, stimmung){ return `<div class="aku"><div class="papagei ${stimmung||''}">${akubineSVG(S&&S.figur&&S.figur.an)}</div><div class="blase">${text?esc(text):''}</div></div>`; }
 function zufall(x){ return Array.isArray(x) ? x[Math.floor(Math.random()*x.length)] : x; }
 function piratWort(){ return S.figur && S.figur.art==='pirat' ? 'Pirat' : 'Piratin'; }
 function plusMuenzen(n){
@@ -2060,7 +2524,8 @@ function abStand(n, ins){ const k=abKey(n, ins); return S.ab[k] || (S.ab[k]={erf
 function laufKey(L){ return abKey(L.a, L.ins||'tier'); }
 function laufVon(n){ return (S.lauf && S.lauf.a===n && (S.lauf.ins||'tier')===INSEL.id && !S.lauf.uebung && !S.lauf.kiste) ? S.lauf : (S.laeufe||{})[abKey(n)]; }
 function inselGeschafft(id){ return [1,2,3,4,5,6].every(n=>((S.ab||{})[abKey(n,id)]||{}).erfuellt); }
-function inselOffen(id){ const i=INSELN[id]; return !i.vor || S.alleFrei || !!(S.inselFrei||{})[id] || inselGeschafft(i.vor); }
+function inselBegonnen(id){ return [1,2,3,4,5,6].some(n=>{ const x=(S.ab||{})[abKey(n,id)]; return x && (x.runden>0 || x.erfuellt); }) || Object.values(S.laeufe||{}).some(L=>L && (L.ins||'tier')===id) || !!(S.lauf && (S.lauf.ins||'tier')===id && !S.lauf.kiste); }
+function inselOffen(id){ const i=INSELN[id]; return !i.vor || S.alleFrei || !!(S.inselFrei||{})[id] || inselGeschafft(i.vor) || inselBegonnen(id); }
 function offen(n){ return S.alleFrei || (n===1 ? inselOffen(INSEL.id) : abStand(n-1).erfuellt); }
 function tagMerken(){ const h=heute(); if(!S.tage.includes(h)) S.tage.push(h); }
 function zeichenZaehlen(z, ok){ const e=S.zeichen[z]||(S.zeichen[z]={richtig:0,falsch:0}); ok?e.richtig++:e.falsch++; e.zuletzt=heute(); }
@@ -2070,7 +2535,7 @@ function render(){
   if(!S && ansicht!=='verbinden' && ansicht!=='setup'){ VB=VB||{schritt:'login',erst:true}; ansicht='verbinden'; }
   if(!S && ansicht==='setup'){ app.innerHTML=setupHTML(); return bindSetup(); }
   if(ansicht!=='figur' && ansicht!=='elternPin' && ansicht!=='eltern' && ansicht!=='verbinden' && !(S.figur&&S.figur.fertig)) ansicht='figur';
-  const f = {karte,insel,bucht,burg,spiel,rundeEnde,schatzwahl,kiste,kisteStart:starteKiste,laden:piratenladen,umkleide,figur,elternPin,eltern,verbinden}[ansicht] || karte;
+  const f = {karte,insel,bucht,burg,lager,spiel,rundeEnde,schatzwahl,kiste,kisteStart:starteKiste,laden:piratenladen,umkleide,figur,elternPin,eltern,verbinden}[ansicht] || karte;
   f();
   app.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>zeige(b.dataset.go));
 }
@@ -2127,6 +2592,7 @@ function karte(){
       <button class="kisteninsel ${kisteSpielbar()?'spielbar':''}" id="kisteninsel"><div class="heim-bild">${kistenInselSVG()}</div><span class="heim-name">🧰 Deine Schatzkiste</span><small>${kisteSpielbar()?'Schatzkisten-Runde: doppelte Münzen!':'Deine Wörter-Schätze'}</small>${kisteSpielbar()?'<span class="mal-gross">×2 🪙</span>':''}</button>
       ${inselKnopf('tier')}
       <button class="schiff-zelle" data-go="umkleide"><div class="schiff-bild">${schiffSVG(S.figur)}</div><span>Dein Schiff</span></button>
+      ${inselKnopf('muschel')}
       ${inselKnopf('kokos')}
       ${inselKnopf('donner')}
     </div>
@@ -2153,7 +2619,7 @@ function karte(){
 function inselKnopf(id){
   const i=INSELN[id], frei=inselOffen(id), fertig=inselGeschafft(id);
   const jetzt = frei && !fertig && INSEL_REIHE.filter(x=>inselOffen(x) && !inselGeschafft(x)).pop()===id;
-  const platz = id==='tier' ? 'p-tier' : id==='kokos' ? 'b1' : 'b2';
+  const platz = {tier:'p-tier', muschel:'b0', kokos:'b1', donner:'b2'}[id] || 'b2';
   const bild = id==='tier' ? '🌴🐾' : i.bild;
   return `<button class="insel ${platz} ${jetzt?'aktiv':frei?'frei':'bald'}" data-insel="${id}">${bild}<span>${i.name}</span>${!frei?'<small>🔒 im Nebel</small>':fertig?'<small>⭐ geschafft</small>':''}</button>`;
 }
@@ -2847,7 +3313,7 @@ function schatzwahl(){
   app.querySelectorAll('[data-w]').forEach(b=>b.onclick=()=>{
     const o=parm.optionen[+b.dataset.w];
     S.inventar.push({name:o[0],bild:o[1],herkunft:INSEL.name+' – '+ABENTEUER[parm.n-1],am:heute()});
-    const platz=SCHATZ_PLATZ[o[0]]; if(platz){ S.figur.an=S.figur.an||{}; S.figur.an[platz]=o[0]; }
+    const platz=SCHATZ_PLATZ[o[0]]; if(anziehbar(platz)){ S.figur.an=S.figur.an||{}; S.figur.an[platz]=o[0]; }
     speichern();
     sag('Juhui! '+o[0]+'!');
     zeige('umkleide',{neu:o[0], n:parm.n});
@@ -2863,7 +3329,11 @@ const PREISE = {
   'Kopftuch mit Totenkopf':20,'Gürtel mit Schnalle':20,'Kette aus Muscheln':20,'Flagge':25,'Flagge mit Tatze':25,
   'Stiefel':30,'Piratenhose':30,'Kompass':30,'Schatzkarte':30,'Fernrohr':35,'Säbel':40,'Pistole':40,
   'Hut mit Papageienfeder':45,'Segel mit Muster':45,'Kapitänshut mit Feder':50,'Mantel':50,
-  'Kanone':60,'Anker aus Gold':60,'Gewand mit Goldknöpfen':70,'Galionsfigur':80,'Krone':100
+  'Kanone':60,'Anker aus Gold':60,'Gewand mit Goldknöpfen':70,'Galionsfigur':80,'Krone':100,
+  'Fliege für Akubine':10,'Augenklappe für Akubine':12,'Sonnenbrille für Akubine':12,'Piratenhut für Akubine':20,'Krone für Akubine':25,
+  'Brot':5,'Käse':5,'Apfel':5,'Fisch':6,'Cervelat':6,'Kuchen':10,
+  'Frisches Wasser':5,'Saft':6,'Milch':5,'Tee':6,
+  'Feuerholz':8,'Pfanne':10,'Kochkessel':15
 };
 function preisVon(n){ return PREISE[n] || 40; }
 function piratenladen(){
@@ -2878,16 +3348,23 @@ function piratenladen(){
    <div class="gestalten">
      <div class="vorschau blatt"><div class="fig-gross">${figurSVG(F)}</div><div class="schiff-klein">${schiffSVG(F)}</div></div>
      <div class="blatt wahl">${aku(text, parm.text?'jubel':'sprich')}
-       ${gruppe('Zum Anziehen', p=>p && p!=='truhe' && !AM_SCHIFF.has(p) && !/^tier/.test(p))}
+       ${gruppe('Zum Anziehen', p=>anziehbar(p) && !AM_SCHIFF.has(p) && !/^tier/.test(p))}
        ${gruppe('Für Akubine', p=>/^tier/.test(p))}
+       ${gruppe('Fürs Lagerfeuer', p=>p==='feuer')}
+       ${gruppe('Essen und Trinken', p=>p==='essen'||p==='trinken')}
        ${gruppe('Fürs Schiff', p=>AM_SCHIFF.has(p))}
        ${gruppe('Für die Schatztruhe', p=>p==='truhe')}
        ${(S.burg||0)<BURG_TEILE.length ? (()=>{ const k=S.burg||0, [bn,bp]=BURG_TEILE[k], geht=S.muenzen>=bp;
           return `<h3>Für die Piratenburg (${k} von ${BURG_TEILE.length})</h3><div class="laden"><button class="ware burgteil ${geht?'geht':''}" id="burgteil" ${geht?'':'disabled'}><div class="ware-bild">${burgSVG(k,0,farbWert(FARBEN_SCHIFF,F.farbe))}</div><div><b>${esc(bn)}</b><br><span>${bp} 🪙</span></div></button></div>`; })() : ''}
+       ${(()=>{ const l=BESUCH.filter(b=>besuchEinst(b.id).an).sort((a,b)=>a.preis-b.preis); if(!l.length) return '';
+          return `<h3>Besuch einladen 🎟️</h3><div class="laden">${l.map(b=>{ const da=(S.besuch||[]).includes(b.id), geht=!da && S.muenzen>=b.preis;
+            return `<button class="ware besuch-ware ${da?'hat':''} ${geht?'geht':''}" data-einladen="${b.id}" ${geht?'':'disabled'}><div class="ware-bild besuch-bild">${besuchSVG(b.id, F.haut)}</div><b>${esc(besuchEinst(b.id).name)}</b><span>${da?'✓ ist da':b.preis+' 🪙'}</span></button>`; }).join('')}</div>`; })()}
        <div class="aktionen"><button class="knopf" data-go="umkleide"><span class="truhe-klein">${truheSVG(false)}</span> Piratenhöhle</button><button class="knopf gruen" data-go="${fe?'insel':'karte'}">${fe?'🌴 Zur Insel':'🗺️ Zur Schatzkarte'}</button></div>
      </div>
    </div>`;
   app.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>zeige(b.dataset.go));
+  app.querySelectorAll('[data-einladen]').forEach(b=>b.onclick=()=>{ const id=b.dataset.einladen; if(!besuchKaufen(id)) return;
+    const t=`Besuch! ${besuchEinst(id).name} kommt auf deine Pirateninsel!`; zeige('bucht',{ankunft:id, text:t}); jubelTon(); sag(t); });
   const bt=document.getElementById('burgteil');
   if(bt) bt.onclick=()=>{ const name=BURG_TEILE[S.burg||0][0]; if(!burgKaufen()) return; const t=`Juhui! ${name} ist gebaut!`; zeige('burg',{neu:true,text:t}); jubelTon(); sag(t); };
   app.querySelectorAll('[data-kauf]').forEach(b=>b.onclick=()=>{
@@ -2895,24 +3372,40 @@ function piratenladen(){
     if(!w || S.muenzen<pr || besitz.has(name)) return;
     S.muenzen-=pr;
     S.inventar.push({name, bild:w[1], herkunft:'Piratenladen', preis:pr, am:heute()});
-    const platz=SCHATZ_PLATZ[name]; if(platz && platz!=='truhe'){ F.an=F.an||{}; F.an[platz]=name; }
+    const platz=SCHATZ_PLATZ[name]; if(anziehbar(platz)){ F.an=F.an||{}; F.an[platz]=name; }
     speichern();
-    const t2 = platz==='truhe' ? (/Akubine/.test(name) ? 'Mmmh, danke! Ich lege es in deine Schatztruhe.' : 'Juhui! Das kommt in deine Schatztruhe.')
-             : AM_SCHIFF.has(platz) ? 'Juhui! Ich habe es an dein Schiff gehängt.' : /^tier/.test(platz||'') ? 'Ist das für mich? Danke!' : 'Juhui! Ich habe es dir gleich angezogen.';
+    const t2 = platz==='truhe' ? 'Juhui! Das kommt in deine Schatztruhe.'
+             : platz==='feuer' ? (name==='Feuerholz' ? 'Juhui! Jetzt können wir ein Lagerfeuer machen. Es brennt auf deiner Pirateninsel.' : 'Juhui! Das stelle ich ans Lagerfeuer auf deiner Pirateninsel.')
+             : platz==='essen'||platz==='trinken' ? (/Akubine/.test(name) ? 'Mmmh, danke! Ich lege es ans Lagerfeuer.' : 'Mmmh! Das bringe ich ans Lagerfeuer auf deiner Pirateninsel.')
+             : AM_SCHIFF.has(platz) ? 'Juhui! Ich habe es an dein Schiff gehängt.' : /^tier/.test(platz||'') ? 'Ist das für mich? Danke! Ich ziehe es gleich an.' : 'Juhui! Ich habe es dir gleich angezogen.';
     parm={fertig:fe, text:t2}; piratenladen(); jubelTon(); sag(t2);
   });
 }
 
 /* ---- Eigene Pirateninsel (intern «bucht»): Zuhause mit Laden, Höhle und Burg ---- */
 function bucht(){
+  const gaeste = besuchDa();
   app.innerHTML=`${kopf('🏠 Deine Pirateninsel','karte')}
-   ${aku(`Willkommen zuhause, ${anrede(S.figur)} ${S.name}!`,'sprich')}
+   ${aku(parm.text || `Willkommen zuhause, ${anrede(S.figur)} ${S.name}!`, parm.text?'jubel':'sprich')}
+   ${gaeste.length?`<div class="besuch-reihe">${gaeste.map(b=>`<button class="besuch ${parm.ankunft===b.id?'ankunft':''}" data-besuch="${b.id}"><div class="besuch-fig ${b.id==='schwester'?'klein':''}">${besuchSVG(b.id, S.figur.haut)}</div><b>${esc(b.name)}</b></button>`).join('')}</div>`:''}
    <div class="bucht">
      <button class="ort" data-go="laden"><div class="ort-bild">🛖<span class="ort-schild">💰</span></div><b>Piratenladen</b><small>Schätze kaufen</small></button>
      <button class="ort" data-go="umkleide"><div class="ort-bild hoehle-bild">${truheSVG(true)}</div><b>Piratenhöhle</b><small>Deine Schatztruhe</small></button>
+     <button class="ort" data-go="lager"><div class="ort-bild lager-bild">${lagerSVG(false)}</div><b>Lagerfeuer</b><small>${lagerHat('Feuerholz')?'Essen und Trinken':'Noch kein Feuerholz'}</small></button>
      <button class="ort" data-go="burg"><div class="ort-bild burg-bild">${burgSVG(S.burg||0,0,farbWert(FARBEN_SCHIFF,S.figur.farbe))}</div><b>Piratenburg</b><small>${(S.burg||0)>=BURG_TEILE.length?'Fertig gebaut!':`${S.burg||0} von ${BURG_TEILE.length} Teilen`}</small></button>
    </div>
    <div class="aktionen"><button class="knopf" data-go="karte">🗺️ Zurück zur Schatzkarte</button></div>`;
+  app.querySelectorAll('[data-besuch]').forEach(b=>b.onclick=()=>{ const t=besuchSpruch(b.dataset.besuch); zeige('bucht',{text:t}); sag(t); });
+}
+/* Besuch: Einstellungen pro Kind (Eltern-Ansicht) */
+function besuchEinst(id){ const d=BESUCH.find(x=>x.id===id); const e=((S.einst||{}).besuch||{})[id]||{}; return {name:(e.name||'').trim()||d.name, an:e.an!==false}; }
+function besuchDa(){ return (S.besuch||[]).map(id=>BESUCH.find(x=>x.id===id)).filter(Boolean).map(b=>Object.assign({},b,{name:besuchEinst(b.id).name})); }
+function besuchSpruch(id){ const b=BESUCH.find(x=>x.id===id); return fuell(zufall(b.sprueche),{name:besuchEinst(id).name, anrede:anrede(S.figur)}); }
+function besuchKaufen(id){
+  const b=BESUCH.find(x=>x.id===id); if(!b || (S.besuch||[]).includes(id) || S.muenzen<b.preis) return false;
+  S.muenzen-=b.preis; S.besuch=(S.besuch||[]).concat(id);
+  S.inventar.push({name:'Besuch: '+besuchEinst(id).name, bild:'🎟️', herkunft:'Piratenladen', preis:b.preis, am:heute(), besuch:true});
+  speichern(); return true;
 }
 
 /* ---- Piratenburg bauen ---- */
@@ -2939,6 +3432,75 @@ function burg(){
   const b=document.getElementById('bauen');
   if(b) b.onclick=()=>{ const name=naechst[0]; if(!burgKaufen()) return; const t=`Juhui! ${name} ist gebaut!`;
     zeige('burg',{neu:true, text:t}); jubelTon(); sag(t); };
+}
+
+/* ---- Lagerfeuer auf der Pirateninsel (Wunsch der Kinder 16.11.2026) ---- */
+const LAGER_ESSEN = ['Brot','Käse','Apfel','Fisch','Cervelat','Kuchen','Banane für Akubine','Keks für Akubine'];
+const LAGER_TRINKEN = ['Kokosnuss','Frisches Wasser','Saft','Milch','Tee'];
+function lagerHat(n){ return S.inventar.some(x=>x.name===n); }
+function lagerBild(n){ const w=SCHAETZE.find(x=>x[0]===n); return w?w[1]:'🎁'; }
+function lagerSVG(gross){
+  const holz=lagerHat('Feuerholz'), kessel=lagerHat('Kochkessel'), pfanne=lagerHat('Pfanne');
+  const klick=(n,inhalt)=>gross?`<g class="lager-ding" data-ding="${esc(n)}" role="button" aria-label="${esc(n)}">${inhalt}</g>`:inhalt;
+  const gaeste=(S.besuch||[]).filter(id=>BESUCH.some(b=>b.id===id));
+  let s=`<svg viewBox="${gaeste.length?'-96 0 416 220':'0 0 320 220'}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Lagerfeuer">
+   ${gaeste.length?'<ellipse cx="20" cy="178" rx="116" ry="38" fill="#e9cf8e"/>':''}
+   <ellipse cx="160" cy="176" rx="158" ry="42" fill="#e9cf8e"/>
+   <ellipse cx="160" cy="176" rx="132" ry="30" fill="#dcbc74"/>`;
+  s += gaeste.map((id,i)=>{ const kl=id==='schwester'?0.8:1, w=46*kl, h=63*kl;
+    return klick('besuch:'+id, `<svg x="${-92+i*40+(46-w)/2}" y="${86+(63-h)}" width="${w}" height="${h}" viewBox="0 -10 220 310" overflow="visible">${besuchSVG(id, S.figur.haut).replace(/^<svg[^>]*>/,'').replace(/<\/svg>$/,'')}</svg>`); }).join('');
+  // Decke für das Essen
+  s+=`<g transform="rotate(-4 66 178)"><rect x="8" y="150" width="118" height="58" rx="6" fill="#d64545"/>
+     ${[0,1,2,3,4,5].map(i=>`<rect x="${8+i*20}" y="150" width="10" height="58" fill="#f4efe6" opacity=".55"/>`).join('')}
+     ${[0,1,2].map(i=>`<rect x="8" y="${150+i*20}" width="118" height="10" fill="#f4efe6" opacity=".4"/>`).join('')}</g>`;
+  // Kiste für die Getränke
+  s+=`<rect x="196" y="176" width="118" height="34" rx="4" fill="#a0662f" stroke="#6b4220" stroke-width="3"/><path d="M198 192 L312 192" stroke="#6b4220" stroke-width="2"/>`;
+  // Steinkreis und Feuer
+  const steine=[[128,156],[140,168],[160,172],[180,168],[192,156],[186,144],[134,144]];
+  s+=steine.map(([x,y])=>`<ellipse cx="${x}" cy="${y}" rx="11" ry="8" fill="#9a918a" stroke="#6d6158" stroke-width="2"/>`).join('');
+  if(holz){
+    s+=klick('Feuerholz',`<path d="M136 160 L184 146" stroke="#7a4a24" stroke-width="11" stroke-linecap="round"/><path d="M136 146 L184 160" stroke="#8b5a2b" stroke-width="11" stroke-linecap="round"/>
+       <g transform="translate(40 39) scale(.75)"><g class="flamme"><path d="M160 156 C138 146 142 118 152 104 C154 118 160 120 162 110 C166 96 162 86 170 76 C172 100 186 112 182 134 C180 150 172 156 160 156 Z" fill="#ff8a1e"/>
+       <path d="M160 154 C148 148 150 132 156 124 C158 132 164 134 166 126 C170 134 174 142 170 148 C168 152 164 154 160 154 Z" fill="#ffd23f"/></g></g>`);
+  } else {
+    s+=`<text x="160" y="160" text-anchor="middle" font-size="22" opacity=".55">🪨</text>`;
+  }
+  if(kessel){
+    s+=klick('Kochkessel',`<path d="M122 164 L160 30 L198 164" fill="none" stroke="#5a3a1b" stroke-width="5" stroke-linecap="round"/><path d="M160 30 L160 58" stroke="#3a3a3a" stroke-width="2.5"/>
+       <path d="M141 62 Q160 54 179 62 L175 86 Q160 98 145 86 Z" fill="#2c2c2c" stroke="#111" stroke-width="2"/><ellipse cx="160" cy="62" rx="19" ry="5" fill="#4a4a4a"/>
+       ${holz?`<g class="dampf"><path d="M150 54 Q144 44 150 36 Q156 28 150 20" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".85"/><path d="M170 52 Q176 42 170 34" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".75"/></g>`:''}`);
+  }
+  if(pfanne) s+=klick('Pfanne',`<ellipse cx="214" cy="150" rx="18" ry="8" fill="#2c2c2c"/><path d="M230 150 L256 142" stroke="#5a3a1b" stroke-width="6" stroke-linecap="round"/><ellipse cx="214" cy="148" rx="7" ry="4" fill="#fff"/><circle cx="214" cy="148" r="2.6" fill="#f2b632"/>`);
+  // Essen auf der Decke
+  const essen=LAGER_ESSEN.filter(lagerHat), plE=[[26,174],[56,172],[86,170],[114,168],[28,202],[58,200],[88,198],[116,196]];
+  s+=essen.map((n,i)=>klick(n,`<text x="${plE[i][0]}" y="${plE[i][1]}" text-anchor="middle" font-size="24">${lagerBild(n)}</text>`)).join('');
+  // Getränke auf der Kiste
+  const trinken=LAGER_TRINKEN.filter(lagerHat), plT=[[212,176],[236,176],[260,176],[284,176],[306,176]];
+  s+=trinken.map((n,i)=>klick(n,`<text x="${plT[i][0]}" y="${plT[i][1]}" text-anchor="middle" font-size="22">${lagerBild(n)}</text>`)).join('');
+  // Akubine sitzt auf einem Baumstamm
+  s+=`<rect x="238" y="118" width="70" height="20" rx="10" fill="#8b5a2b" stroke="#6b4220" stroke-width="3"/><circle cx="300" cy="128" r="7" fill="#c89b6a" stroke="#6b4220" stroke-width="2"/>
+      <svg x="244" y="44" width="58" height="76" viewBox="0 -10 100 130" overflow="visible">${akubineInnen()}${akubineDeko(S.figur&&S.figur.an)}</svg>`;
+  return s+`</svg>`;
+}
+const LAGER_SAGEN = {
+  'Feuerholz':'Knister, knister! Das Feuer ist schön warm.',
+  'Kochkessel':'Blubb, blubb! Im Kessel kocht eine feine Suppe.',
+  'Pfanne':'Brutzel, brutzel! Ein Spiegelei für dich.',
+  'Brot':'Mmmh, frisches Brot!','Käse':'Mmmh, feiner Käse!','Apfel':'Knack! Der Apfel ist süss.','Fisch':'Mmmh, ein Fisch aus dem Meer!',
+  'Cervelat':'Mmmh, ein Cervelat vom Feuer!','Kuchen':'Mmmh, Kuchen! Darf ich ein Stück?',
+  'Banane für Akubine':'Mmmh, meine Banane! Danke!','Keks für Akubine':'Mmmh, mein Keks! Knusper, knusper.',
+  'Kokosnuss':'Schlürf! Kokosmilch ist lecker.','Frisches Wasser':'Ahh, frisches Wasser! Das tut gut.',
+  'Saft':'Mmmh, süsser Saft!','Milch':'Mmmh, kalte Milch!','Tee':'Ahh, warmer Tee am Feuer!'
+};
+function lager(){
+  const holz=lagerHat('Feuerholz'), dinge=S.inventar.filter(x=>AM_FEUER.has(SCHATZ_PLATZ[x.name])).length;
+  const text = parm.text || (!holz ? 'Hier machen wir ein Lagerfeuer! Im Piratenladen gibt es Feuerholz, Essen und Trinken.'
+             : dinge<=1 ? 'Das Feuer brennt! Im Piratenladen gibt es noch Essen und Trinken.' : 'Wie gemütlich! Tippe auf etwas, dann probiere ich es.');
+  app.innerHTML=`${kopf('🔥 Lagerfeuer','bucht')}
+   ${aku(text,parm.text?'jubel':'sprich')}
+   <div class="lager-gross blatt">${lagerSVG(true)}</div>
+   <div class="aktionen"><button class="knopf gold" data-go="laden">💰 Piratenladen</button><button class="knopf" data-go="bucht">🏠 Zur Pirateninsel</button></div>`;
+  app.querySelectorAll('[data-ding]').forEach(g=>g.onclick=()=>{ const d=g.dataset.ding; const t=d.startsWith('besuch:') ? besuchSpruch(d.slice(7)) : (LAGER_SAGEN[d]||'Mmmh!'); zeige('lager',{text:t}); sag(t); });
 }
 
 /* ---- Schatzkiste & Schätze (Kind) ---- */
@@ -2997,7 +3559,7 @@ function figur(){
 /* ---- Umkleide: Schätze anziehen bzw. ans Schiff hängen ---- */
 function umkleide(){
   const F=S.figur, an=F.an=F.an||{};
-  const namen=[...new Set(S.inventar.filter(x=>!x.burg).map(x=>x.name))];
+  const namen=[...new Set(S.inventar.filter(x=>!x.burg && !x.besuch).map(x=>x.name))];
   const bildVon=n=>(S.inventar.find(x=>x.name===n)||{}).bild||'🎁';
   const gruppe=(titel,filter)=>{ const l=namen.filter(n=>filter(SCHATZ_PLATZ[n]||'')); if(!l.length) return '';
     return `<h3>${titel}</h3><div class="liste">${l.map(n=>{ const p=SCHATZ_PLATZ[n], tr=an[p]===n;
@@ -3012,15 +3574,16 @@ function umkleide(){
      </div>
      <div class="blatt wahl">
        ${aku(text,'sprich')}
-       ${gruppe('Zum Anziehen', p=>p && p!=='truhe' && !AM_SCHIFF.has(p) && !/^tier/.test(p))}
+       ${gruppe('Zum Anziehen', p=>anziehbar(p) && !AM_SCHIFF.has(p) && !/^tier/.test(p))}
        ${gruppe('Für Akubine', p=>/^tier/.test(p))}
        ${gruppe('Fürs Schiff', p=>AM_SCHIFF.has(p))}
+       ${namen.some(n=>AM_FEUER.has(SCHATZ_PLATZ[n]))?`<h3>Am Lagerfeuer</h3><div class="aktionen" style="justify-content:flex-start"><button class="knopf" data-go="lager">🔥 Zum Lagerfeuer</button></div>`:''}
        ${truhe.length?`<h3>In deiner Schatztruhe</h3><div class="liste">${truhe.map(n=>`<div class="karteW teil"><div style="font-size:44px">${bildVon(n)}</div>${esc(n)}</div>`).join('')}</div>`:''}
        <div class="aktionen"><button class="knopf gold" data-go="laden">💰 Piratenladen</button><button class="knopf" data-go="figur">✏️ Aussehen ändern</button><button class="knopf gruen" id="zurInsel">🗺️ Zur Schatzkarte</button></div>
      </div>
    </div>`;
   app.querySelectorAll('[data-teil]').forEach(b=>b.onclick=()=>{
-    const n=b.dataset.teil, p=SCHATZ_PLATZ[n]; if(!p || p==='truhe') return;
+    const n=b.dataset.teil, p=SCHATZ_PLATZ[n]; if(!anziehbar(p)) return;
     an[p] = an[p]===n ? '' : n; speichern(); parm={}; umkleide();
   });
   document.getElementById('zurInsel').onclick=()=>zeige('karte');
@@ -3066,7 +3629,7 @@ function eltern(){
   app.innerHTML=`${kopf('Eltern-Ansicht','karte')}<div class="blatt eltern">
    <h2>${esc(S.name)}</h2>
    <p>Übungstage: <b>${tage.length}</b> ${tage.length?`(zuletzt ${tage.slice(0,7).join(', ')})`:''}<br>
-   Aufgaben insgesamt: <b>${anz}</b>, heute: <b>${heuteV}</b> · Goldmünzen: <b>${S.muenzen}</b> · Schätze: <b>${S.inventar.filter(x=>!x.burg).length}</b> · Burg: <b>${S.burg||0} / ${BURG_TEILE.length}</b>
+   Aufgaben insgesamt: <b>${anz}</b>, heute: <b>${heuteV}</b> · Goldmünzen: <b>${S.muenzen}</b> · Schätze: <b>${S.inventar.filter(x=>!x.burg && !x.besuch).length}</b> · Burg: <b>${S.burg||0} / ${BURG_TEILE.length}</b> · Besuch: <b>${(S.besuch||[]).length} / ${BESUCH.length}</b>
    ${S.offset?`<br><b>Testdatum aktiv:</b> ${h} (+${S.offset} Tage)`:''}</p>
    ${INSEL_REIHE.map(id=>{ const merk=INSEL.id; setInsel(id); const html=`<h3>${INSEL.bild} ${esc(INSEL.name)} ${inselOffen(id)?'':'(im Nebel)'}</h3>
    <table><tr><th>Abenteuer</th><th>Stand</th><th>Geschafft</th><th>Ergebnisse (richtig / Aufgaben → Münzen)</th></tr>
@@ -3089,9 +3652,16 @@ function eltern(){
    <div class="zeile"><button class="knopf" id="tontest">🔊 Ton testen</button><span id="tonerg"></span></div>
    <details><summary>Keine oder schlechte deutsche Stimme?</summary><div class="hinweis">${stimmHilfe()}</div></details>
 
+   <h3>Besuch auf der Pirateninsel</h3>
+   <div class="hinweis">Das Kind kann im Piratenladen ein Ticket kaufen, dann kommt dieser Besuch auf seine Pirateninsel und bleibt dort. Namen hier anpassen; Besuch, der nicht passt, ausschalten.</div>
+   ${BESUCH.map(b=>{ const e=besuchEinst(b.id), da=(S.besuch||[]).includes(b.id);
+     return `<div class="zeile besuch-einst"><label><input type="checkbox" data-besuchan="${b.id}" ${e.an?'checked':''}> im Laden</label>
+       <input type="text" data-besuchname="${b.id}" value="${esc(e.name)}" maxlength="40" style="font-size:18px;padding:6px 10px;border-radius:10px;border:2px solid var(--sand2);min-width:220px">
+       <small>${esc(b.rolle)} · ${b.preis} 🪙${da?' · ✓ schon da':''}</small></div>`; }).join('')}
+
    <h3>Seereise (Levels)</h3>
-   <div class="hinweis">Die Inseln kommen der Reihe nach. 🐾 Wildtatzen-Insel = Level 1: Lückenwort. 🥥 Kokosbucht = Level 2: Wortgruppen mit 2 und 3 Wörtern («die Katze», «die braune Katze»), dazwischen immer wieder Mehrzahl («die Äpfel»). ⛈️ Donnerfels = Level 3: 4 Wörter und erste kurze Sätze. Eine Insel öffnet sich, wenn die vorherige geschafft ist.</div>
-   <div class="zeile">${['kokos','donner'].map(id=>`<label><input type="checkbox" data-ifrei="${id}" ${(S.inselFrei||{})[id]?'checked':''}> ${INSELN[id].bild} ${INSELN[id].name} jetzt schon öffnen</label>`).join(' ')}</div>
+   <div class="hinweis">Die Inseln kommen der Reihe nach. 🐾 Wildtatzen-Insel = Level 1: Lückenwort. 🐚 Muschelmarkt = Level 1: Lückenwort mit weiteren Wörtern des Grundwortschatzes (Wochentage, Monate, Modalverben, kleine Wörter). 🥥 Kokosbucht = Level 2: Wortgruppen mit 2 und 3 Wörtern («die Katze», «die braune Katze»), dazwischen immer wieder Mehrzahl («die Äpfel»). ⛈️ Donnerfels = Level 3: 4 Wörter und erste kurze Sätze. Eine Insel öffnet sich, wenn die vorherige geschafft ist.</div>
+   <div class="zeile">${['muschel','kokos','donner'].map(id=>`<label><input type="checkbox" data-ifrei="${id}" ${(S.inselFrei||{})[id]?'checked':''}> ${INSELN[id].bild} ${INSELN[id].name} jetzt schon öffnen</label>`).join(' ')}</div>
    <div class="feld"><label><input type="checkbox" id="erklSchalter" ${E.erklaerungen!==false?'checked':''}> <b>Erklärungen bei Fehlern</b> <small>(kurze Regel im grünen Kasten; nur wenn sie den Fehler genau erklärt)</small></label></div>
    <div class="feld"><span><b>Striche</b> auf Kokosbucht und Donnerfels (ein Strich pro Wort, das Kind schreibt darauf):</span></div>
    <div class="zeile">${[['immer','an'],['aus','aus']].map(([v,l])=>`<label><input type="radio" name="striche" value="${v}" ${((E.striche||'immer')==='aus'?'aus':'immer')===v?'checked':''}> ${l}</label>`).join(' ')}</div>
@@ -3139,6 +3709,8 @@ function eltern(){
   const $=id=>document.getElementById(id);
   app.querySelectorAll('[data-e=tempo]').forEach(i=>i.onchange=()=>{ const v=parseInt(i.value,10); if(v>=50&&v<=130){ E.tempo=v; speichern(); sag('Der Hase sitzt auf der Wiese.'); } });
   $('speich').onclick=()=>{ app.querySelectorAll('[data-e]').forEach(i=>{ const v=parseInt(i.value,10); if(!isNaN(v)&&v>=0) E[i.dataset.e]=v; }); E.schwelle=Math.max(1,E.schwelle); E.minTage=Math.max(1,E.minTage); speichern(); $('gesp').textContent=' ✓ gespeichert'; };
+  app.querySelectorAll('[data-besuchan]').forEach(c=>c.onchange=()=>{ E.besuch=E.besuch||{}; const id=c.dataset.besuchan; E.besuch[id]=Object.assign({},E.besuch[id],{an:c.checked}); speichern(); });
+  app.querySelectorAll('[data-besuchname]').forEach(c=>c.onchange=()=>{ E.besuch=E.besuch||{}; const id=c.dataset.besuchname; E.besuch[id]=Object.assign({},E.besuch[id],{name:c.value.trim()}); speichern(); });
   app.querySelectorAll('[data-ifrei]').forEach(c=>c.onchange=()=>{ S.inselFrei=S.inselFrei||{}; S.inselFrei[c.dataset.ifrei]=c.checked; speichern(); });
   { const es=$('erklSchalter'); if(es) es.onchange=()=>{ E.erklaerungen=es.checked; speichern(); }; }
   app.querySelectorAll('input[name=striche]').forEach(r=>r.onchange=()=>{ E.striche=r.value; speichern(); });
