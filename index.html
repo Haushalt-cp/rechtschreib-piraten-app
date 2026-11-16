@@ -3809,7 +3809,7 @@ function verbinden(){
   if(!VB) VB={schritt:'login'};
   const m=VB.meldung?`<div class="hinweis">${esc(VB.meldung)}</div>`:'';
   let inhalt='';
-  if(VB.schritt==='login') inhalt=`${VB.erst?'<h2>🏴‍☠️ Willkommen bei den Wortschatz-Piraten!</h2><p><b>Für Eltern:</b> Meldet euch einmal an und verbindet dieses Tablet mit eurem Kind. Der Fortschritt wird dann automatisch gesichert und geht auch bei einem neuen Tablet nicht verloren.</p>'
+  if(VB.schritt==='login') inhalt=`${VB.erst?'<h2>🏴‍☠️ Willkommen bei den Wortschatz-Piraten!</h2>'
       :'<h2>🔑 Eltern-Anmeldung</h2><p>Einmal pro Tablet: Ein Elternteil meldet sich an und wählt, zu welchem Kind dieses Tablet gehört. Danach speichert das Tablet den Fortschritt automatisch – das Kind merkt davon nichts.</p>'}
     <label>E-Mail</label><input id="vbmail" type="email" autocomplete="username" autocapitalize="off" spellcheck="false" value="${esc(VB.mail||'')}">
     <label>Passwort</label><input id="vbpw" type="password" autocomplete="current-password" value="${esc(VB.pw||'')}">
