@@ -115,6 +115,15 @@ header.kopf{display:flex;align-items:center;gap:10px;margin-bottom:12px}
 .schiff-zelle .schiff-bild{max-width:200px}
 .bucht{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;margin:14px 0}
 .ort-bild.burg-bild{font-size:0}
+.ort-bild.lager-bild{font-size:0}
+.ort-bild.lager-bild svg,.lager-gross svg{width:100%;height:auto}
+.lager-gross{display:block;width:100%;max-width:820px;margin:12px auto 22px;padding:10px}
+.lager-ding{cursor:pointer}
+.flamme{transform-box:fill-box;transform-origin:50% 100%;animation:flackern .5s ease-in-out infinite alternate}
+@keyframes flackern{from{transform:scale(1,1) skewX(-2deg)}to{transform:scale(.94,1.08) skewX(3deg)}}
+.dampf{animation:dampf 2.4s ease-in-out infinite}
+@keyframes dampf{0%{opacity:0;transform:translateY(6px)}40%{opacity:.9}100%{opacity:0;transform:translateY(-10px)}}
+@media (prefers-reduced-motion: reduce){.flamme,.dampf{animation:none}}
 .ort-bild.burg-bild svg{width:100%;height:auto}
 .burg-gross{background:linear-gradient(#bfe6fb,#e9f6fd 70%);border-radius:28px;padding:10px;box-shadow:0 6px 0 rgba(0,0,0,.15)}
 .burg-gross svg{width:100%;height:auto;display:block;max-height:52vh}
@@ -1327,7 +1336,13 @@ const SCHAETZE = [
   ['Muschel','🐚','alle'],['Seestern','🌟','alle'],['Bunte Feder','🪶','alle'],['Kokosnuss','🥥','alle'],['Würfel','🎲','alle'],
   ['Banane für Akubine','🍌','alle'],['Keks für Akubine','🍪','alle'],['Perle','🦪','alle'],['Goldener Ohrring','💛','alle'],
   ['Goldener Schlüssel','🔑','alle'],['Flaschenpost','🍾','alle'],['Sanduhr','⏳','alle'],['Laterne','🏮','alle'],['Schiffsglocke','🔔','alle'],
-  ['Edelstein','💎','alle'],['Krebs','🦀','alle'],['Rettungsring','🛟','alle'],['Fass','🛢️','alle'],['Schildkröte','🐢','alle']
+  ['Edelstein','💎','alle'],['Krebs','🦀','alle'],['Rettungsring','🛟','alle'],['Fass','🛢️','alle'],['Schildkröte','🐢','alle'],
+  // Wünsche der Kinder (16.11.2026): Sachen für Akubine, Essen und Trinken, Lagerfeuer
+  ['Augenklappe für Akubine','🏴‍☠️','alle'],['Sonnenbrille für Akubine','🕶️','alle'],['Fliege für Akubine','🎀','alle'],
+  ['Piratenhut für Akubine','🎩','alle'],['Krone für Akubine','👑','alle'],
+  ['Feuerholz','🪵','alle'],['Kochkessel','🫕','alle'],['Pfanne','🍳','alle'],
+  ['Brot','🍞','alle'],['Käse','🧀','alle'],['Apfel','🍎','alle'],['Fisch','🐟','alle'],['Cervelat','🌭','alle'],['Kuchen','🍰','alle'],
+  ['Frisches Wasser','💧','alle'],['Saft','🧃','alle'],['Milch','🥛','alle'],['Tee','🍵','alle']
 ];
 
 /* Einstellungen (alle in der Eltern-Ansicht änderbar) */
@@ -1667,11 +1682,20 @@ const SCHATZ_PLATZ = {
   'Säbel':'hand','Pistole':'hand','Fernrohr':'hand','Kompass':'hand','Schatzkarte':'hand',
   'Halsband':'tierHals','Mütze für das Haustier':'tierKopf',
   'Goldener Ohrring':'ohr','Laterne':'laterne','Schiffsglocke':'glocke','Rettungsring':'ring','Fass':'fass',
-  'Muschel':'truhe','Seestern':'truhe','Bunte Feder':'truhe','Kokosnuss':'truhe','Würfel':'truhe','Banane für Akubine':'truhe','Keks für Akubine':'truhe',
+  'Muschel':'truhe','Seestern':'truhe','Bunte Feder':'truhe','Würfel':'truhe',
+  'Augenklappe für Akubine':'tierGesicht','Sonnenbrille für Akubine':'tierGesicht','Fliege für Akubine':'tierHals',
+  'Piratenhut für Akubine':'tierKopf','Krone für Akubine':'tierKopf',
+  // Lagerfeuer auf der Pirateninsel (nicht zum Anziehen)
+  'Feuerholz':'feuer','Kochkessel':'feuer','Pfanne':'feuer',
+  'Kokosnuss':'essen','Banane für Akubine':'essen','Keks für Akubine':'essen',
+  'Brot':'essen','Käse':'essen','Apfel':'essen','Fisch':'essen','Cervelat':'essen','Kuchen':'essen',
+  'Frisches Wasser':'trinken','Saft':'trinken','Milch':'trinken','Tee':'trinken',
   'Perle':'truhe','Goldener Schlüssel':'truhe','Flaschenpost':'truhe','Sanduhr':'truhe','Edelstein':'truhe','Krebs':'truhe','Schildkröte':'truhe',
   'Kanone':'kanone','Segel mit Muster':'segel','Flagge':'flagge','Flagge mit Tatze':'flagge','Galionsfigur':'galion','Anker aus Gold':'anker'
 };
 const AM_SCHIFF = new Set(['kanone','segel','flagge','galion','anker','laterne','glocke','ring','fass']);
+const AM_FEUER = new Set(['feuer','essen','trinken']);
+function anziehbar(p){ return !!p && p!=='truhe' && !AM_FEUER.has(p); }
 const HAND_BILD = {'Säbel':'🗡️','Pistole':'🔫','Fernrohr':'🔭','Kompass':'🧭','Schatzkarte':'🗺️'};
 
 /* Akubine als gezeichnete Comic-Figur (Papagei) */
@@ -1690,7 +1714,19 @@ function akubineInnen(){
   <path d="M76 52 Q82 58 88 56" stroke="#7a5a10" stroke-width="2.5" fill="none" stroke-linecap="round"/>
   <ellipse cx="46" cy="47" rx="6" ry="3.5" fill="#ff9d9d" opacity=".75"/>`;
 }
-function akubineSVG(){ return `<svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Akubine">${akubineInnen()}</svg>`; }
+/* Sachen, die Akubine trägt (in Akubines Koordinaten, viewBox 0 0 100 120) */
+function akubineDeko(an){
+  an = an||{}; let s='';
+  if(an.tierHals==='Halsband') s += `<path d="M36 60 Q56 72 76 58" fill="none" stroke="#e8b020" stroke-width="5" stroke-linecap="round"/><circle cx="56" cy="67" r="4.5" fill="#d64545"/>`;
+  if(an.tierHals==='Fliege für Akubine') s += `<path d="M56 64 L42 56 L42 72 Z M56 64 L70 56 L70 72 Z" fill="#2f6fd6" stroke="#1d4a99" stroke-width="2" stroke-linejoin="round"/><circle cx="56" cy="64" r="4.5" fill="#1d4a99"/><circle cx="47" cy="60" r="1.6" fill="#fff"/><circle cx="65" cy="68" r="1.6" fill="#fff"/>`;
+  if(an.tierGesicht==='Augenklappe für Akubine') s += `<path d="M32 26 L80 46" stroke="#1a1a1a" stroke-width="3.5" stroke-linecap="round"/><ellipse cx="66" cy="36" rx="11" ry="11.5" fill="#1a1a1a"/><path d="M60 31 Q64 28 68 30" stroke="#555" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+  if(an.tierGesicht==='Sonnenbrille für Akubine') s += `<path d="M53 33 L34 30" stroke="#1d2a3a" stroke-width="3.5" stroke-linecap="round"/><rect x="52" y="27" width="27" height="17" rx="7" fill="#1d2a3a"/><path d="M57 32 L65 32" stroke="#7fa6d6" stroke-width="2.5" stroke-linecap="round"/>`;
+  if(an.tierKopf==='Mütze für das Haustier') s += `<text x="52" y="24" font-size="34" text-anchor="middle">🧢</text>`;
+  if(an.tierKopf==='Piratenhut für Akubine') s += `<path d="M24 22 Q56 -16 90 22 Q56 10 24 22 Z" fill="#1d1d1d"/><path d="M24 22 Q56 10 90 22" fill="none" stroke="#f2c230" stroke-width="3.5"/><circle cx="57" cy="7" r="5" fill="#fff"/><circle cx="55" cy="6" r="1.4" fill="#1d1d1d"/><circle cx="59" cy="6" r="1.4" fill="#1d1d1d"/>`;
+  if(an.tierKopf==='Krone für Akubine') s += `<path d="M38 18 L40 -2 L49 9 L56 -6 L63 9 L72 -2 L74 18 Z" fill="#f2c230" stroke="#c99512" stroke-width="2.5" stroke-linejoin="round"/><circle cx="56" cy="11" r="3.5" fill="#d64545"/><circle cx="45" cy="13" r="2.5" fill="#2f6fd6"/><circle cx="67" cy="13" r="2.5" fill="#2f9a5a"/>`;
+  return s;
+}
+function akubineSVG(an){ return `<svg viewBox="0 -10 100 130" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Akubine">${akubineInnen()}${akubineDeko(an)}</svg>`; }
 /* Schatztruhe (zu oder offen mit Gold) */
 function truheSVG(offen){
   const deckel = offen
@@ -1784,9 +1820,7 @@ function figurSVG(f, opt){
   if(an.hand && HAND_BILD[an.hand]) s += `<text x="166" y="214" font-size="48" text-anchor="middle">${HAND_BILD[an.hand]}</text>`;
   // Akubine auf der Schulter
   if(!opt.ohneAkubine){
-    s += `<svg x="30" y="90" width="48" height="58" viewBox="0 0 100 120">${akubineInnen()}</svg>`;
-    if(an.tierHals) s += `<path d="M44,118 Q56,128 70,120" fill="none" stroke="#e8b020" stroke-width="4" stroke-linecap="round"/><circle cx="57" cy="125" r="3.5" fill="#d64545"/>`;
-    if(an.tierKopf) s += `<text x="52" y="94" font-size="24" text-anchor="middle">🧢</text>`;
+    s += `<svg x="30" y="85" width="48" height="63" viewBox="0 -10 100 130" overflow="visible">${akubineInnen()}${akubineDeko(an)}</svg>`;
   }
   return s + `</svg>`;
 }
@@ -2048,7 +2082,7 @@ function kopf(titel, zurueck){
   return `<header class="kopf">${zk}
     <div class="titel">${titel||''}</div><div class="muenzen" id="mz">🪙 ${S.muenzen}</div></header>`;
 }
-function aku(text, stimmung){ return `<div class="aku"><div class="papagei ${stimmung||''}">${akubineSVG()}</div><div class="blase">${text?esc(text):''}</div></div>`; }
+function aku(text, stimmung){ return `<div class="aku"><div class="papagei ${stimmung||''}">${akubineSVG(S&&S.figur&&S.figur.an)}</div><div class="blase">${text?esc(text):''}</div></div>`; }
 function zufall(x){ return Array.isArray(x) ? x[Math.floor(Math.random()*x.length)] : x; }
 function piratWort(){ return S.figur && S.figur.art==='pirat' ? 'Pirat' : 'Piratin'; }
 function plusMuenzen(n){
@@ -2070,7 +2104,7 @@ function render(){
   if(!S && ansicht!=='verbinden' && ansicht!=='setup'){ VB=VB||{schritt:'login',erst:true}; ansicht='verbinden'; }
   if(!S && ansicht==='setup'){ app.innerHTML=setupHTML(); return bindSetup(); }
   if(ansicht!=='figur' && ansicht!=='elternPin' && ansicht!=='eltern' && ansicht!=='verbinden' && !(S.figur&&S.figur.fertig)) ansicht='figur';
-  const f = {karte,insel,bucht,burg,spiel,rundeEnde,schatzwahl,kiste,kisteStart:starteKiste,laden:piratenladen,umkleide,figur,elternPin,eltern,verbinden}[ansicht] || karte;
+  const f = {karte,insel,bucht,burg,lager,spiel,rundeEnde,schatzwahl,kiste,kisteStart:starteKiste,laden:piratenladen,umkleide,figur,elternPin,eltern,verbinden}[ansicht] || karte;
   f();
   app.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>zeige(b.dataset.go));
 }
@@ -2847,7 +2881,7 @@ function schatzwahl(){
   app.querySelectorAll('[data-w]').forEach(b=>b.onclick=()=>{
     const o=parm.optionen[+b.dataset.w];
     S.inventar.push({name:o[0],bild:o[1],herkunft:INSEL.name+' – '+ABENTEUER[parm.n-1],am:heute()});
-    const platz=SCHATZ_PLATZ[o[0]]; if(platz){ S.figur.an=S.figur.an||{}; S.figur.an[platz]=o[0]; }
+    const platz=SCHATZ_PLATZ[o[0]]; if(anziehbar(platz)){ S.figur.an=S.figur.an||{}; S.figur.an[platz]=o[0]; }
     speichern();
     sag('Juhui! '+o[0]+'!');
     zeige('umkleide',{neu:o[0], n:parm.n});
@@ -2863,7 +2897,11 @@ const PREISE = {
   'Kopftuch mit Totenkopf':20,'Gürtel mit Schnalle':20,'Kette aus Muscheln':20,'Flagge':25,'Flagge mit Tatze':25,
   'Stiefel':30,'Piratenhose':30,'Kompass':30,'Schatzkarte':30,'Fernrohr':35,'Säbel':40,'Pistole':40,
   'Hut mit Papageienfeder':45,'Segel mit Muster':45,'Kapitänshut mit Feder':50,'Mantel':50,
-  'Kanone':60,'Anker aus Gold':60,'Gewand mit Goldknöpfen':70,'Galionsfigur':80,'Krone':100
+  'Kanone':60,'Anker aus Gold':60,'Gewand mit Goldknöpfen':70,'Galionsfigur':80,'Krone':100,
+  'Fliege für Akubine':10,'Augenklappe für Akubine':12,'Sonnenbrille für Akubine':12,'Piratenhut für Akubine':20,'Krone für Akubine':25,
+  'Brot':5,'Käse':5,'Apfel':5,'Fisch':6,'Cervelat':6,'Kuchen':10,
+  'Frisches Wasser':5,'Saft':6,'Milch':5,'Tee':6,
+  'Feuerholz':8,'Pfanne':10,'Kochkessel':15
 };
 function preisVon(n){ return PREISE[n] || 40; }
 function piratenladen(){
@@ -2878,8 +2916,10 @@ function piratenladen(){
    <div class="gestalten">
      <div class="vorschau blatt"><div class="fig-gross">${figurSVG(F)}</div><div class="schiff-klein">${schiffSVG(F)}</div></div>
      <div class="blatt wahl">${aku(text, parm.text?'jubel':'sprich')}
-       ${gruppe('Zum Anziehen', p=>p && p!=='truhe' && !AM_SCHIFF.has(p) && !/^tier/.test(p))}
+       ${gruppe('Zum Anziehen', p=>anziehbar(p) && !AM_SCHIFF.has(p) && !/^tier/.test(p))}
        ${gruppe('Für Akubine', p=>/^tier/.test(p))}
+       ${gruppe('Fürs Lagerfeuer', p=>p==='feuer')}
+       ${gruppe('Essen und Trinken', p=>p==='essen'||p==='trinken')}
        ${gruppe('Fürs Schiff', p=>AM_SCHIFF.has(p))}
        ${gruppe('Für die Schatztruhe', p=>p==='truhe')}
        ${(S.burg||0)<BURG_TEILE.length ? (()=>{ const k=S.burg||0, [bn,bp]=BURG_TEILE[k], geht=S.muenzen>=bp;
@@ -2895,10 +2935,12 @@ function piratenladen(){
     if(!w || S.muenzen<pr || besitz.has(name)) return;
     S.muenzen-=pr;
     S.inventar.push({name, bild:w[1], herkunft:'Piratenladen', preis:pr, am:heute()});
-    const platz=SCHATZ_PLATZ[name]; if(platz && platz!=='truhe'){ F.an=F.an||{}; F.an[platz]=name; }
+    const platz=SCHATZ_PLATZ[name]; if(anziehbar(platz)){ F.an=F.an||{}; F.an[platz]=name; }
     speichern();
-    const t2 = platz==='truhe' ? (/Akubine/.test(name) ? 'Mmmh, danke! Ich lege es in deine Schatztruhe.' : 'Juhui! Das kommt in deine Schatztruhe.')
-             : AM_SCHIFF.has(platz) ? 'Juhui! Ich habe es an dein Schiff gehängt.' : /^tier/.test(platz||'') ? 'Ist das für mich? Danke!' : 'Juhui! Ich habe es dir gleich angezogen.';
+    const t2 = platz==='truhe' ? 'Juhui! Das kommt in deine Schatztruhe.'
+             : platz==='feuer' ? (name==='Feuerholz' ? 'Juhui! Jetzt können wir ein Lagerfeuer machen. Es brennt auf deiner Pirateninsel.' : 'Juhui! Das stelle ich ans Lagerfeuer auf deiner Pirateninsel.')
+             : platz==='essen'||platz==='trinken' ? (/Akubine/.test(name) ? 'Mmmh, danke! Ich lege es ans Lagerfeuer.' : 'Mmmh! Das bringe ich ans Lagerfeuer auf deiner Pirateninsel.')
+             : AM_SCHIFF.has(platz) ? 'Juhui! Ich habe es an dein Schiff gehängt.' : /^tier/.test(platz||'') ? 'Ist das für mich? Danke! Ich ziehe es gleich an.' : 'Juhui! Ich habe es dir gleich angezogen.';
     parm={fertig:fe, text:t2}; piratenladen(); jubelTon(); sag(t2);
   });
 }
@@ -2910,6 +2952,7 @@ function bucht(){
    <div class="bucht">
      <button class="ort" data-go="laden"><div class="ort-bild">🛖<span class="ort-schild">💰</span></div><b>Piratenladen</b><small>Schätze kaufen</small></button>
      <button class="ort" data-go="umkleide"><div class="ort-bild hoehle-bild">${truheSVG(true)}</div><b>Piratenhöhle</b><small>Deine Schatztruhe</small></button>
+     <button class="ort" data-go="lager"><div class="ort-bild lager-bild">${lagerSVG(false)}</div><b>Lagerfeuer</b><small>${lagerHat('Feuerholz')?'Essen und Trinken':'Noch kein Feuerholz'}</small></button>
      <button class="ort" data-go="burg"><div class="ort-bild burg-bild">${burgSVG(S.burg||0,0,farbWert(FARBEN_SCHIFF,S.figur.farbe))}</div><b>Piratenburg</b><small>${(S.burg||0)>=BURG_TEILE.length?'Fertig gebaut!':`${S.burg||0} von ${BURG_TEILE.length} Teilen`}</small></button>
    </div>
    <div class="aktionen"><button class="knopf" data-go="karte">🗺️ Zurück zur Schatzkarte</button></div>`;
@@ -2939,6 +2982,71 @@ function burg(){
   const b=document.getElementById('bauen');
   if(b) b.onclick=()=>{ const name=naechst[0]; if(!burgKaufen()) return; const t=`Juhui! ${name} ist gebaut!`;
     zeige('burg',{neu:true, text:t}); jubelTon(); sag(t); };
+}
+
+/* ---- Lagerfeuer auf der Pirateninsel (Wunsch der Kinder 16.11.2026) ---- */
+const LAGER_ESSEN = ['Brot','Käse','Apfel','Fisch','Cervelat','Kuchen','Banane für Akubine','Keks für Akubine'];
+const LAGER_TRINKEN = ['Kokosnuss','Frisches Wasser','Saft','Milch','Tee'];
+function lagerHat(n){ return S.inventar.some(x=>x.name===n); }
+function lagerBild(n){ const w=SCHAETZE.find(x=>x[0]===n); return w?w[1]:'🎁'; }
+function lagerSVG(gross){
+  const holz=lagerHat('Feuerholz'), kessel=lagerHat('Kochkessel'), pfanne=lagerHat('Pfanne');
+  const klick=(n,inhalt)=>gross?`<g class="lager-ding" data-ding="${esc(n)}" role="button" aria-label="${esc(n)}">${inhalt}</g>`:inhalt;
+  let s=`<svg viewBox="0 0 320 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Lagerfeuer">
+   <ellipse cx="160" cy="176" rx="158" ry="42" fill="#e9cf8e"/>
+   <ellipse cx="160" cy="176" rx="132" ry="30" fill="#dcbc74"/>`;
+  // Decke für das Essen
+  s+=`<g transform="rotate(-4 66 178)"><rect x="8" y="150" width="118" height="58" rx="6" fill="#d64545"/>
+     ${[0,1,2,3,4,5].map(i=>`<rect x="${8+i*20}" y="150" width="10" height="58" fill="#f4efe6" opacity=".55"/>`).join('')}
+     ${[0,1,2].map(i=>`<rect x="8" y="${150+i*20}" width="118" height="10" fill="#f4efe6" opacity=".4"/>`).join('')}</g>`;
+  // Kiste für die Getränke
+  s+=`<rect x="196" y="176" width="118" height="34" rx="4" fill="#a0662f" stroke="#6b4220" stroke-width="3"/><path d="M198 192 L312 192" stroke="#6b4220" stroke-width="2"/>`;
+  // Steinkreis und Feuer
+  const steine=[[128,156],[140,168],[160,172],[180,168],[192,156],[186,144],[134,144]];
+  s+=steine.map(([x,y])=>`<ellipse cx="${x}" cy="${y}" rx="11" ry="8" fill="#9a918a" stroke="#6d6158" stroke-width="2"/>`).join('');
+  if(holz){
+    s+=klick('Feuerholz',`<path d="M136 160 L184 146" stroke="#7a4a24" stroke-width="11" stroke-linecap="round"/><path d="M136 146 L184 160" stroke="#8b5a2b" stroke-width="11" stroke-linecap="round"/>
+       <g transform="translate(40 39) scale(.75)"><g class="flamme"><path d="M160 156 C138 146 142 118 152 104 C154 118 160 120 162 110 C166 96 162 86 170 76 C172 100 186 112 182 134 C180 150 172 156 160 156 Z" fill="#ff8a1e"/>
+       <path d="M160 154 C148 148 150 132 156 124 C158 132 164 134 166 126 C170 134 174 142 170 148 C168 152 164 154 160 154 Z" fill="#ffd23f"/></g></g>`);
+  } else {
+    s+=`<text x="160" y="160" text-anchor="middle" font-size="22" opacity=".55">🪨</text>`;
+  }
+  if(kessel){
+    s+=klick('Kochkessel',`<path d="M122 164 L160 30 L198 164" fill="none" stroke="#5a3a1b" stroke-width="5" stroke-linecap="round"/><path d="M160 30 L160 58" stroke="#3a3a3a" stroke-width="2.5"/>
+       <path d="M141 62 Q160 54 179 62 L175 86 Q160 98 145 86 Z" fill="#2c2c2c" stroke="#111" stroke-width="2"/><ellipse cx="160" cy="62" rx="19" ry="5" fill="#4a4a4a"/>
+       ${holz?`<g class="dampf"><path d="M150 54 Q144 44 150 36 Q156 28 150 20" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".85"/><path d="M170 52 Q176 42 170 34" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".75"/></g>`:''}`);
+  }
+  if(pfanne) s+=klick('Pfanne',`<ellipse cx="214" cy="150" rx="18" ry="8" fill="#2c2c2c"/><path d="M230 150 L256 142" stroke="#5a3a1b" stroke-width="6" stroke-linecap="round"/><ellipse cx="214" cy="148" rx="7" ry="4" fill="#fff"/><circle cx="214" cy="148" r="2.6" fill="#f2b632"/>`);
+  // Essen auf der Decke
+  const essen=LAGER_ESSEN.filter(lagerHat), plE=[[26,174],[56,172],[86,170],[114,168],[28,202],[58,200],[88,198],[116,196]];
+  s+=essen.map((n,i)=>klick(n,`<text x="${plE[i][0]}" y="${plE[i][1]}" text-anchor="middle" font-size="24">${lagerBild(n)}</text>`)).join('');
+  // Getränke auf der Kiste
+  const trinken=LAGER_TRINKEN.filter(lagerHat), plT=[[212,176],[236,176],[260,176],[284,176],[306,176]];
+  s+=trinken.map((n,i)=>klick(n,`<text x="${plT[i][0]}" y="${plT[i][1]}" text-anchor="middle" font-size="22">${lagerBild(n)}</text>`)).join('');
+  // Akubine sitzt auf einem Baumstamm
+  s+=`<rect x="238" y="118" width="70" height="20" rx="10" fill="#8b5a2b" stroke="#6b4220" stroke-width="3"/><circle cx="300" cy="128" r="7" fill="#c89b6a" stroke="#6b4220" stroke-width="2"/>
+      <svg x="244" y="44" width="58" height="76" viewBox="0 -10 100 130" overflow="visible">${akubineInnen()}${akubineDeko(S.figur&&S.figur.an)}</svg>`;
+  return s+`</svg>`;
+}
+const LAGER_SAGEN = {
+  'Feuerholz':'Knister, knister! Das Feuer ist schön warm.',
+  'Kochkessel':'Blubb, blubb! Im Kessel kocht eine feine Suppe.',
+  'Pfanne':'Brutzel, brutzel! Ein Spiegelei für dich.',
+  'Brot':'Mmmh, frisches Brot!','Käse':'Mmmh, feiner Käse!','Apfel':'Knack! Der Apfel ist süss.','Fisch':'Mmmh, ein Fisch aus dem Meer!',
+  'Cervelat':'Mmmh, ein Cervelat vom Feuer!','Kuchen':'Mmmh, Kuchen! Darf ich ein Stück?',
+  'Banane für Akubine':'Mmmh, meine Banane! Danke!','Keks für Akubine':'Mmmh, mein Keks! Knusper, knusper.',
+  'Kokosnuss':'Schlürf! Kokosmilch ist lecker.','Frisches Wasser':'Ahh, frisches Wasser! Das tut gut.',
+  'Saft':'Mmmh, süsser Saft!','Milch':'Mmmh, kalte Milch!','Tee':'Ahh, warmer Tee am Feuer!'
+};
+function lager(){
+  const holz=lagerHat('Feuerholz'), dinge=S.inventar.filter(x=>AM_FEUER.has(SCHATZ_PLATZ[x.name])).length;
+  const text = parm.text || (!holz ? 'Hier machen wir ein Lagerfeuer! Im Piratenladen gibt es Feuerholz, Essen und Trinken.'
+             : dinge<=1 ? 'Das Feuer brennt! Im Piratenladen gibt es noch Essen und Trinken.' : 'Wie gemütlich! Tippe auf etwas, dann probiere ich es.');
+  app.innerHTML=`${kopf('🔥 Lagerfeuer','bucht')}
+   ${aku(text,parm.text?'jubel':'sprich')}
+   <div class="lager-gross blatt">${lagerSVG(true)}</div>
+   <div class="aktionen"><button class="knopf gold" data-go="laden">💰 Piratenladen</button><button class="knopf" data-go="bucht">🏠 Zur Pirateninsel</button></div>`;
+  app.querySelectorAll('[data-ding]').forEach(g=>g.onclick=()=>{ const t=LAGER_SAGEN[g.dataset.ding]||'Mmmh!'; zeige('lager',{text:t}); sag(t); });
 }
 
 /* ---- Schatzkiste & Schätze (Kind) ---- */
@@ -3012,15 +3120,16 @@ function umkleide(){
      </div>
      <div class="blatt wahl">
        ${aku(text,'sprich')}
-       ${gruppe('Zum Anziehen', p=>p && p!=='truhe' && !AM_SCHIFF.has(p) && !/^tier/.test(p))}
+       ${gruppe('Zum Anziehen', p=>anziehbar(p) && !AM_SCHIFF.has(p) && !/^tier/.test(p))}
        ${gruppe('Für Akubine', p=>/^tier/.test(p))}
        ${gruppe('Fürs Schiff', p=>AM_SCHIFF.has(p))}
+       ${namen.some(n=>AM_FEUER.has(SCHATZ_PLATZ[n]))?`<h3>Am Lagerfeuer</h3><div class="aktionen" style="justify-content:flex-start"><button class="knopf" data-go="lager">🔥 Zum Lagerfeuer</button></div>`:''}
        ${truhe.length?`<h3>In deiner Schatztruhe</h3><div class="liste">${truhe.map(n=>`<div class="karteW teil"><div style="font-size:44px">${bildVon(n)}</div>${esc(n)}</div>`).join('')}</div>`:''}
        <div class="aktionen"><button class="knopf gold" data-go="laden">💰 Piratenladen</button><button class="knopf" data-go="figur">✏️ Aussehen ändern</button><button class="knopf gruen" id="zurInsel">🗺️ Zur Schatzkarte</button></div>
      </div>
    </div>`;
   app.querySelectorAll('[data-teil]').forEach(b=>b.onclick=()=>{
-    const n=b.dataset.teil, p=SCHATZ_PLATZ[n]; if(!p || p==='truhe') return;
+    const n=b.dataset.teil, p=SCHATZ_PLATZ[n]; if(!anziehbar(p)) return;
     an[p] = an[p]===n ? '' : n; speichern(); parm={}; umkleide();
   });
   document.getElementById('zurInsel').onclick=()=>zeige('karte');
