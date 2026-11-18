@@ -125,6 +125,10 @@ header.kopf{display:flex;align-items:center;gap:10px;margin-bottom:12px}
 .isch-schatz{position:absolute;left:50%;top:-8%;font-size:clamp(70px,16vw,120px);transform:translateX(-50%);animation:aufsteigen 1.2s cubic-bezier(.2,.8,.3,1.3) both}
 @keyframes aufsteigen{from{transform:translate(-50%,60%) scale(.2);opacity:0}to{transform:translate(-50%,-30%) scale(1);opacity:1}}
 .isch-name{font-size:30px;font-weight:700;margin:30px 0 4px}
+.isch-flagge{width:clamp(90px,20vw,130px);height:auto;font-size:0}
+.isch-flagge svg{width:100%;height:auto}
+.isch-flagge span{position:absolute;left:54%;top:30%;transform:translate(-50%,-50%);font-size:clamp(30px,7vw,44px)}
+.isch-schiff{width:200px;height:160px;margin:6px auto 0}
 .flaggen-reihe{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin:6px 0 4px}
 .flagge{background:rgba(255,255,255,.14);border-radius:24px;padding:8px 12px 10px;display:flex;flex-direction:column;align-items:center;color:#fff;font-size:17px;width:130px}
 .flagge-bild{position:relative;width:84px;height:100px}
@@ -317,14 +321,16 @@ const INSELN = {
 };
 const INSEL_REIHE = ['tier','muschel','kokos','donner'];
 /* Insel-Schatz (18.11.2026): Wer alle 6 Abenteuer einer Insel schafft, öffnet die Truhe mit dem X.
-   Darin: ein goldener Schatz, den es nur auf dieser Insel gibt, und MZ_INSEL Goldmünzen. Dazu weht eine Flagge auf der Pirateninsel. */
-const MZ_INSEL = 40;
+   Darin (Entscheid Eltern 18.11.2026): MZ_INSEL Goldmünzen und eine Flagge der Insel fürs Schiff (wird gleich aufgehängt).
+   Dazu weht dieselbe Flagge auf der Pirateninsel. */
+const MZ_INSEL = 50;
 const INSEL_SCHATZ = {
-  tier:   {name:'Goldene Tatze',     bild:'🐾', akk:'die Wildtatzen-Insel', flagge:'#2f9a5a'},
-  muschel:{name:'Goldene Muschel',   bild:'🐚', akk:'den Muschelmarkt',     flagge:'#2f6fd6'},
-  kokos:  {name:'Goldene Kokosnuss', bild:'🥥', akk:'die Kokosbucht',       flagge:'#e08a1e'},
-  donner: {name:'Goldener Blitz',    bild:'⚡', akk:'den Donnerfels',       flagge:'#7a4fc9'}
+  tier:   {name:'Flagge der Wildtatzen-Insel', bild:'🐾', akk:'die Wildtatzen-Insel', flagge:'#2f9a5a'},
+  muschel:{name:'Flagge vom Muschelmarkt',     bild:'🐚', akk:'den Muschelmarkt',     flagge:'#2f6fd6'},
+  kokos:  {name:'Flagge der Kokosbucht',       bild:'🥥', akk:'die Kokosbucht',       flagge:'#e08a1e'},
+  donner: {name:'Flagge vom Donnerfels',       bild:'⚡', akk:'den Donnerfels',       flagge:'#7a4fc9'}
 };
+function inselFlaggeVon(name){ return Object.values(INSEL_SCHATZ).find(x=>x.name===name); }
 const INSEL_ZU = {tier:'zur Wildtatzen-Insel', muschel:'zum Muschelmarkt', kokos:'zur Kokosbucht', donner:'zum Donnerfels'};
 let INSEL = INSELN.tier, ABENTEUER = INSEL.ab, ABENTEUER_BILD = INSEL.abBild;
 function setInsel(id){ INSEL = INSELN[id] || INSELN.tier; ABENTEUER = INSEL.ab; ABENTEUER_BILD = INSEL.abBild; if(typeof S!=='undefined' && S) S.aktInsel = INSEL.id; }
@@ -2152,6 +2158,7 @@ const SCHATZ_PLATZ = {
   'Perle':'truhe','Goldener Schlüssel':'truhe','Flaschenpost':'truhe','Sanduhr':'truhe','Edelstein':'truhe','Krebs':'truhe','Schildkröte':'truhe',
   'Kanone':'kanone','Segel mit Muster':'segel','Flagge':'flagge','Flagge mit Tatze':'flagge','Galionsfigur':'galion','Anker aus Gold':'anker'
 };
+Object.values(INSEL_SCHATZ).forEach(z=>{ SCHATZ_PLATZ[z.name]='flagge'; });   // Insel-Flaggen: ans Schiff, nicht im Laden
 const AM_SCHIFF = new Set(['kanone','segel','flagge','galion','anker','laterne','glocke','ring','fass']);
 const AM_FEUER = new Set(['feuer','essen','trinken']);
 function anziehbar(p){ return !!p && p!=='truhe' && !AM_FEUER.has(p); }
@@ -2293,6 +2300,7 @@ function schiffSVG(f){
    <path d="M70,40 L170,40 Q180,82 170,120 L70,120 Q60,82 70,40 Z" fill="${an.segel?`url(#${id})`:'#fffaf0'}" stroke="#d9cbb0" stroke-width="2"/>`;
   // Flagge
   if(an.flagge==='Flagge') s += `<rect x="124" y="8" width="44" height="28" rx="2" fill="#1d1d1d"/><circle cx="146" cy="19" r="6" fill="#fff"/><rect x="142" y="23" width="8" height="5" fill="#fff"/><path d="M134,30 L158,12 M134,12 L158,30" stroke="#fff" stroke-width="2.5"/>`;
+  else if(inselFlaggeVon(an.flagge)){ const z=inselFlaggeVon(an.flagge); s += `<rect x="124" y="8" width="44" height="28" rx="2" fill="${z.flagge}" stroke="#f2c230" stroke-width="3"/><text x="146" y="30" font-size="19" text-anchor="middle">${z.bild}</text>`; }
   else if(an.flagge==='Flagge mit Tatze') s += `<rect x="124" y="8" width="44" height="28" rx="2" fill="${farbe}"/><text x="146" y="30" font-size="20" text-anchor="middle">🐾</text>`;
   else s += `<rect x="124" y="8" width="44" height="28" rx="2" fill="${farbe}"/>`;
   // Rumpf
@@ -2338,6 +2346,7 @@ function migrieren(o){
   if(o.figur && !o.figur.hemd) o.figur.hemd=o.figur.farbe;
   if(!o.tempo1411){ if(o.einst.tempo===90) o.einst.tempo=100; o.tempo1411=true; }
   o.laeufe=o.laeufe||{}; o.burg=o.burg||0; o.begruesst=o.begruesst||{}; o.inselFrei=o.inselFrei||{}; o.inselSchatz=o.inselSchatz||{};
+  (o.inventar||[]).forEach(x=>{ const z=x.inselSchatz && INSEL_SCHATZ[x.inselSchatz]; if(z){ x.name=z.name; x.bild=z.bild; } });
   o.einst.level1=true; o.einst.level2=false;   // Wildtatzen-Insel: nur Lückenwort (14.11.2026)
   if(o.figur && !o.figur.an) o.figur.an={};
   Object.values(o.ab||{}).forEach(a=>{ if(!a.punkte) a.punkte={richtig:0,gesamt:0}; });
@@ -2560,6 +2569,7 @@ function inselSchatzGeben(id){
   const s=INSEL_SCHATZ[id]; S.inselSchatz=S.inselSchatz||{}; if(!s || S.inselSchatz[id]) return false;
   S.inselSchatz[id]=heute();
   S.inventar.push({name:s.name, bild:s.bild, herkunft:INSELN[id].name, am:heute(), inselSchatz:id});
+  S.figur.an=S.figur.an||{}; S.figur.an.flagge=s.name;   // gleich ans Schiff hängen
   S.muenzen+=MZ_INSEL; speichern(); return true;
 }
 function inselNach(id){ return INSEL_REIHE.find(x=>INSELN[x].vor===id); }
@@ -2805,7 +2815,7 @@ function insel(){
       ${W.deko.map(([e,x,y])=>`<span class="deko" style="left:${x}%;top:${y}%">${e}</span>`).join('')}
       ${svg}
       <div class="anleger" style="${pos(W.schiff)}">${schiffSVG(S.figur)}</div>
-      <div class="ziel-truhe" style="${pos(W.x)}">${truheSVG(alleFertig)}${(S.inselSchatz||{})[INSEL.id]&&INSEL_SCHATZ[INSEL.id]?`<span class="ziel-schatz gold-emoji">${INSEL_SCHATZ[INSEL.id].bild}</span>`:''}<span class="x">❌</span></div>
+      <div class="ziel-truhe" style="${pos(W.x)}">${truheSVG(alleFertig)}<span class="x">❌</span></div>
       ${steine}
       <div class="held" style="${pos(heldPos)}">${figurSVG(S.figur)}</div>
     </div>
@@ -3432,7 +3442,7 @@ function piratenladen(){
 function inselSchatzText(id, offen){
   const s=INSEL_SCHATZ[id], nach=inselNach(id);
   if(!offen) return `Hurra! Du hast ${s.akk} erobert! Tippe auf die Schatztruhe!`;
-  return `In der Truhe liegt die ${s.name}! Und ${MZ_INSEL} Goldmünzen!` + (nach ? ` Jetzt kannst du ${INSEL_ZU[nach]} segeln.` : '');
+  return `Eine Flagge für dein Schiff! Und ${MZ_INSEL} Goldmünzen!` + (nach ? ` Jetzt kannst du ${INSEL_ZU[nach]} segeln.` : '');
 }
 function inselSchatz(){
   const id=parm.id, s=INSEL_SCHATZ[id], i=INSELN[id];
@@ -3440,8 +3450,8 @@ function inselSchatz(){
   const auf=!!parm.offen;
   app.innerHTML=`${kopf('🎉 '+esc(i.name)+' erobert!','')}
    <div class="blatt mitte" style="margin-top:10px">${aku(inselSchatzText(id,auf),'jubel')}
-     <button class="isch-truhe ${auf?'auf':'zu'}" id="truhe" aria-label="Schatztruhe öffnen">${truheSVG(auf)}${auf?`<span class="isch-schatz gold-emoji">${s.bild}</span>`:''}</button>
-     ${auf?`<div class="isch-name">${esc(s.name)}</div><p class="mzzeile">+${MZ_INSEL} 🪙</p>`:''}
+     <button class="isch-truhe ${auf?'auf':'zu'}" id="truhe" aria-label="Schatztruhe öffnen">${truheSVG(auf)}${auf?`<span class="isch-schatz isch-flagge">${inselFlaggeSVG(s.flagge)}<span>${s.bild}</span></span>`:''}</button>
+     ${auf?`<div class="isch-name">${esc(s.name)}</div><p class="mzzeile">+${MZ_INSEL} 🪙</p><div class="isch-schiff">${schiffSVG(S.figur)}</div>`:''}
    </div>
    ${auf?`<div class="aktionen"><button class="knopf gold" id="zurBucht">🏠 Deine Flagge ansehen</button><button class="knopf gruen" data-go="karte">🗺️ Zur Schatzkarte</button></div>`:''}`;
   const t=document.getElementById('truhe');
@@ -3651,7 +3661,6 @@ function umkleide(){
       return `<button class="karteW teil ${tr?'an':''} ${n===parm.neu?'neu':''}" data-teil="${esc(n)}"><div style="font-size:44px">${bildVon(n)}</div>${esc(n)}${tr?'<small>✓ an</small>':''}</button>`; }).join('')}</div>`; };
   let text = namen.length ? 'Das ist deine Schatztruhe. Tippe auf einen Schatz zum Anziehen oder Ausziehen.' : 'Deine Schatztruhe ist noch leer. Im Piratenladen kannst du Schätze kaufen!';
   const truhe = namen.filter(n=>SCHATZ_PLATZ[n]==='truhe');
-  const iSch = S.inventar.filter(x=>x.inselSchatz);
   app.innerHTML=`${kopf('<span class="truhe-klein">'+truheSVG(true)+'</span> Piratenhöhle','bucht')}
    <div class="gestalten">
      <div class="vorschau blatt">
@@ -3664,7 +3673,6 @@ function umkleide(){
        ${gruppe('Für Akubine', p=>/^tier/.test(p))}
        ${gruppe('Fürs Schiff', p=>AM_SCHIFF.has(p))}
        ${namen.some(n=>AM_FEUER.has(SCHATZ_PLATZ[n]))?`<h3>Am Lagerfeuer</h3><div class="aktionen" style="justify-content:flex-start"><button class="knopf" data-go="lager">🔥 Zum Lagerfeuer</button></div>`:''}
-       ${iSch.length?`<h3>Schätze von eroberten Inseln</h3><div class="liste">${iSch.map(x=>`<div class="karteW teil"><div style="font-size:44px" class="gold-emoji">${x.bild}</div>${esc(x.name)}<small>${esc(x.herkunft)}</small></div>`).join('')}</div>`:''}
        ${truhe.length?`<h3>In deiner Schatztruhe</h3><div class="liste">${truhe.map(n=>`<div class="karteW teil"><div style="font-size:44px">${bildVon(n)}</div>${esc(n)}</div>`).join('')}</div>`:''}
        <div class="aktionen"><button class="knopf gold" data-go="laden">💰 Piratenladen</button><button class="knopf" data-go="figur">✏️ Aussehen ändern</button><button class="knopf gruen" id="zurInsel">🗺️ Zur Schatzkarte</button></div>
      </div>
